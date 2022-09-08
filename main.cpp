@@ -3,8 +3,6 @@
 #include "Rectangle.h"
 #include "Triangle.h"
 
-//testkommentar /Amanda <3
-
 int main() {
 	Color red{255.0, 0.0, 0.0};
 	Color green{ 0.0, 255.0, 0.0 };
@@ -34,4 +32,6 @@ int main() {
 	scene.push_back(&wall1);
 	
 	return 0;
+
+	//testar att pusha // Amanda <3
 }
