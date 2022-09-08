@@ -3,6 +3,8 @@
 #include "Rectangle.h"
 #include "Triangle.h"
 
+//testkommentar /Amanda <3
+
 int main() {
 	Color red{255.0, 0.0, 0.0};
 	Color green{ 0.0, 255.0, 0.0 };
