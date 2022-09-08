@@ -1,0 +1,3 @@
+﻿  main.cpp
+X:\TNGC15\Project\Globalen_ray_tracer\main.cpp(8,7): warning C4101: 'vector': unreferenced local variable
+  Globalen_ray_tracer.vcxproj -> X:\TNGC15\Project\Globalen_ray_tracer\x64\Debug\Globalen_ray_tracer.exe
