@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 
+//testkommentar
+
 class Color {
 public:
 	Color(double r = 0.0, double g = 0.0, double b = 0.0) : color{r, g, b} {}
