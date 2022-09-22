@@ -1,18 +1,23 @@
 #pragma once
 #include <iostream>
 #include "Ray.h"
+#include <vector>
+#include <fstream>
 
 class Camera {
 public:
-	struct Pixel {
-		Color color;
-		Ray ray;
-	};
+
+	Camera(int pixelHeight = 800, int pixelWidth = 800);
+
+	void setPixels();
 
 	void render();
+
 private:
-	const int height = 800;
-	const int width = 800;
-	std::vector<std::vector<Pixel>> pixelImage;
+	int height;
+	int width;
+	std::vector<std::vector<Color>> pixelImage;
+	int iMax = 1;
+	double pixelWidth;
 
 };

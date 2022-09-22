@@ -3,10 +3,10 @@
 
 class Triangle : public Polygon {
 public:
-	Triangle(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3, Color c);
+	Triangle(const glm::vec3 p1, const glm::vec3 p2, const glm::vec3 p3, const Color c);
 
-	glm::vec4 intersection(const Ray& ray) override;
-	glm::vec4 calculateNormal() override;
+	~Triangle() {}
+
+	bool intersection(const glm::vec3 inVec, const glm::vec3 start, glm::vec3& intPoint) override;
 private:
-	std::vector<glm::vec3> points;
 };

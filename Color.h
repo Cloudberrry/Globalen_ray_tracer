@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include "glm/glm.hpp"
 
 class Color {
 public:
@@ -12,6 +13,9 @@ public:
 	Color& operator+(Color c);
 	Color& operator-(Color c);
 	Color& operator*(Color c);
+
+	glm::vec3 getColor() { return color; }
+	void setColor(glm::vec3 c) { color = c; }
 
 private:
 
