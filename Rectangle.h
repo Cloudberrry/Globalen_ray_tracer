@@ -7,7 +7,9 @@ public:
 
 	~Rectangle(){}
 
-	bool intersection(const glm::vec3 inVec, const glm::vec3 start, glm::vec3& intPoint) override;
+	bool intersection(const glm::vec3 inDirection, const glm::vec3 start, glm::vec3& refIntersection) override;
+
+	glm::vec3 calculateNormal() override;
 
 private:
 };

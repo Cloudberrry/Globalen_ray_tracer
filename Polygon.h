@@ -12,12 +12,16 @@ public:
 
 	virtual bool intersection(const glm::vec3 inVec, const glm::vec3 start, glm::vec3& intPoint) = 0;
 
+	virtual glm::vec3 calculateNormal() = 0;
+
+	Color getColor(){ return color; }
+
 	static std::size_t get_count_polygons();
 
 protected:
 
 	Polygon(const std::vector<glm::vec3> P, const Color c)
-		: points{ P }, color { c }, normal{ glm::vec3(0.0, 0.0, 0.0) } {
+		: points{ P }, color { c } {
 		++count_polygons;
 	}
 

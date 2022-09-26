@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
-#include "Polygon.h"
-#include "Color.h"
+#include "Triangle.h"
+#include "Rectangle.h"
 
 class Ray {
 public:
@@ -23,7 +23,7 @@ private:
 	glm::vec3 start;
 	glm::vec3 end;
 	glm::vec3 direction;
-	Polygon* surface; // Surface on which the starting vertex is located
+	//Polygon* surface; // Surface on which the starting vertex is located
 	Color color;
 	Ray* next;
 	Ray* previous;

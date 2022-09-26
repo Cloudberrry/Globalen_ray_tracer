@@ -40,14 +40,14 @@ public:
 	Color yellow{ 255.0, 255.0, 0.0 };
 	Color magenta{ 255.0, 0.0, 255.0 };
 	Color cyan{ 0.0, 255.0, 255.0 };
+	std::vector<Polygon*> allPolygons;
 
 private:
-	std::vector<Polygon*> allPolygons;
 	
 
 	// Floor
-	Triangle floorTrig1{ {-3, 0, -5}, {0, -6, -5}, {0, 6, -5}, gray };
-	Triangle floorTrig2{ {10, -6, -5}, {13, 0, -5}, {10, 6, -5}, gray };
+	Triangle floorTrig1{ {-3, 0, -5}, {0, -6, -5},  {0, 6, -5}, gray };
+	Triangle floorTrig2{ {10, 6, -5}, {10, -6, -5}, {13, 0, -5},  gray };
 	Rectangle floorRectangle{ {0, -6, -5}, {10, -6, -5}, {10, 6, -5}, {0, 6, -5}, gray };
 
 	// Ceiling

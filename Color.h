@@ -10,9 +10,9 @@ public:
 
 	//TODO Normalize color values
 
-	Color& operator+(Color c);
-	Color& operator-(Color c);
-	Color& operator*(Color c);
+	Color operator+(Color c);
+	Color operator-(Color c);
+	Color operator*(Color c);
 
 	glm::vec3 getColor() { return color; }
 	void setColor(glm::vec3 c) { color = c; }

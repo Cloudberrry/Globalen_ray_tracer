@@ -1,15 +1,15 @@
 #pragma once
 #include <iostream>
-#include "Ray.h"
 #include <vector>
 #include <fstream>
+#include "Ray.h"
 
 class Camera {
 public:
 
 	Camera(int pixelHeight = 800, int pixelWidth = 800);
 
-	void setPixels();
+	void setPixels(const std::vector<Polygon*>& P);
 
 	void render();
 
@@ -18,6 +18,6 @@ private:
 	int width;
 	std::vector<std::vector<Color>> pixelImage;
 	int iMax = 1;
-	double pixelWidth;
+	float pixelWidth;
 
 };
