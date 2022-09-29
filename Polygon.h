@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "glm/glm.hpp"
-#include "Color.h"
+#include "Definitions.h"
 
 class Polygon {
 public:
@@ -10,9 +10,9 @@ public:
 		--count_polygons;
 	}
 
-	virtual bool intersection(const glm::vec3 inVec, const glm::vec3 start, glm::vec3& intPoint) = 0;
+	virtual bool intersection(const Direction inDirection, const Vertex start, Vertex& intPoint) = 0;
 
-	virtual glm::vec3 calculateNormal() = 0;
+	virtual Direction calculateNormal() = 0;
 
 	Color getColor(){ return color; }
 
@@ -20,7 +20,7 @@ public:
 
 protected:
 
-	Polygon(const std::vector<glm::vec3> P, const Color c)
+	Polygon(const std::vector<Vertex> P, const Color c)
 		: points{ P }, color { c } {
 		++count_polygons;
 	}
@@ -30,8 +30,8 @@ protected:
 	}
 
 	Color color;
-	glm::vec3 normal;
-	std::vector<glm::vec3> points;
+	Direction normal;
+	std::vector<Vertex> points;
 
 	static std::size_t count_polygons;
 };

@@ -140,15 +140,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Color.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Polygon.cpp" />
+    <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="Color.h" />
+    <ClInclude Include="Definitions.h" />
     <ClInclude Include="glm\glm.hpp" />
     <ClInclude Include="Polygon.h" />
     <ClInclude Include="Ray.h" />

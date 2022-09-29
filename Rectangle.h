@@ -3,13 +3,13 @@
 
 class Rectangle : public Polygon {
 public:
-	Rectangle(const glm::vec3 p1, const glm::vec3 p2, const glm::vec3 p3, const glm::vec3 p4, const Color c);
+	Rectangle(const Vertex p1, const Vertex p2, const Vertex p3, const Vertex p4, const Color c);
 
 	~Rectangle(){}
 
-	bool intersection(const glm::vec3 inDirection, const glm::vec3 start, glm::vec3& refIntersection) override;
+	bool intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection) override;
 
-	glm::vec3 calculateNormal() override;
+	Direction calculateNormal() override;
 
 private:
 };

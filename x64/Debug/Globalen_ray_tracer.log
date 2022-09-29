@@ -1,2 +1,4 @@
-﻿  main.cpp
-  Globalen_ray_tracer.vcxproj -> X:\TNGC15\Project\Globalen_ray_tracer\x64\Debug\Globalen_ray_tracer.exe
+﻿  Camera.cpp
+  Triangle.cpp
+  Generating Code...
+  Globalen_ray_tracer.vcxproj -> X:\Documents\GitHub\Globalen_ray_tracer\x64\Debug\Globalen_ray_tracer.exe

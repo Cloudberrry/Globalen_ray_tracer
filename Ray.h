@@ -5,25 +5,35 @@
 
 class Ray {
 public:
-	Ray(glm::vec3 p0, glm::vec3 p1, Ray* nextRay = nullptr, Ray* prevRay = nullptr, Color c = 0) : start{ p0 }, end{ p1 }, next{ nextRay }, previous{ prevRay }, color{ c } {
-		direction = glm::normalize(p1 - p0);
-	}
 
+	Ray() = default;
 
-	~Ray() {
-		/*
-		Ray* temp = next->previous;
-		next->previous = previous;
-		previous->next = next;
-		delete temp;
-		*/
-	}
+	Ray(Vertex startPos, Direction dir, Polygon* P = nullptr, Ray* prevRay = nullptr);
+
+	~Ray();
+
+	void setEndPoint(Vertex point);
+
+	void setRayColor(Color c);
+
+	void setNextRay(Ray* R);
+
+	Vertex getStartingPoint();
+
+	Direction getDirection();
+
+	Direction getNewDirection(Direction inDirection, Direction normal);
+
+	Color getColor();
+
+	Polygon* getSurface();
+
 
 private:
-	glm::vec3 start;
-	glm::vec3 end;
-	glm::vec3 direction;
-	//Polygon* surface; // Surface on which the starting vertex is located
+	Vertex start;
+	Vertex end;
+	Direction direction;
+	Polygon* surface; // Surface on which the starting vertex is located
 	Color color;
 	Ray* next;
 	Ray* previous;

@@ -7,7 +7,7 @@
 int main() {
 	
 	Scene myScene;
-	Camera myCamera{10, 10};
+	Camera myCamera{800, 800};
 
 	myCamera.setPixels(myScene.allPolygons);
 	myCamera.render();

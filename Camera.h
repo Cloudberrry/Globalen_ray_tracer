@@ -13,11 +13,13 @@ public:
 
 	void render();
 
+	Color shotRay(Ray* ray, const std::vector<Polygon*>& P);
+
 private:
 	int height;
 	int width;
 	std::vector<std::vector<Color>> pixelImage;
-	int iMax = 1;
+	float iMax;
 	float pixelWidth;
 
 };
