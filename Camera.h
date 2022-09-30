@@ -13,7 +13,7 @@ public:
 
 	void render();
 
-	Color shotRay(Ray* ray, const std::vector<Polygon*>& P);
+	Color shootRay(Ray* ray, const std::vector<Polygon*>& P);
 
 private:
 	int height;

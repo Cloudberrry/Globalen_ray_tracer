@@ -14,18 +14,18 @@ void Camera::setPixels(const std::vector<Polygon*>& P) {
 	
 	float newiMax;
 	Vertex pixelPos;
-	Vertex startingPos = {-1, 0.0, 0.0};
+	Vertex eyePosition = {-1.0, 0.0, 0.0};
 	Direction currentDirection;
-	Ray* currentRay;
+	Ray* firstRay;
 
 	for (int i = 0; i < height; ++i) {
 		for (int j = 0; j < width; ++j) {
 
 			pixelPos = { 0.0, j * pixelWidth - (1.0 - pixelWidth), i * pixelWidth - (1.0 - pixelWidth) };
-			currentDirection = glm::normalize(pixelPos - startingPos);
-			currentRay = new Ray{ pixelPos, currentDirection };
+			currentDirection = glm::normalize(pixelPos - eyePosition);
+			firstRay = new Ray{ pixelPos, currentDirection };
 
-			pixelImage[i][j] = shotRay(currentRay, P);
+			pixelImage[i][j] = shootRay(firstRay, P);
 
 			newiMax = glm::max(glm::max(pixelImage[i][j].x, pixelImage[i][j].y), pixelImage[i][j].z);
 
@@ -56,7 +56,7 @@ void Camera::render() {
 	std::cout << "Finished" << std::endl;
 }
 
-Color Camera::shotRay(Ray* ray, const std::vector<Polygon*>& P) {
+Color Camera::shootRay(Ray* ray, const std::vector<Polygon*>& P) {
 
 	Vertex intersectionPoint;
 
@@ -66,10 +66,11 @@ Color Camera::shotRay(Ray* ray, const std::vector<Polygon*>& P) {
 
 			ray->setEndPoint(intersectionPoint);
 
+			// Add ray termination condition here
 			if (P[k]->getMaterial().getType() == "Mirror") {
 				Ray* newRay = new Ray{intersectionPoint, ray->getNewDirection(ray->getDirection(), P[k]->calculateNormal()), P[k], ray};
 				ray->setNextRay(newRay);
-				ray->setRayColor(shotRay(newRay, P));
+				ray->setRayColor(shootRay(newRay, P));
 			}
 			else {
 				ray->setRayColor(P[k]->getMaterial().getColor());
