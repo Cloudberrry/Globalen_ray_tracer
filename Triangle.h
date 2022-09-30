@@ -3,7 +3,7 @@
 
 class Triangle : public Polygon {
 public:
-	Triangle(const Vertex p1, const Vertex p2, const Vertex p3, const Color c);
+	Triangle(const Vertex p1, const Vertex p2, const Vertex p3, Material m);
 
 	~Triangle() {}
 

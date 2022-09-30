@@ -1,7 +1,7 @@
 #include "Triangle.h"
 
-Triangle::Triangle(const Vertex p1, const Vertex p2, const Vertex p3, const Color c)
-    : Polygon{ std::vector<Vertex>{p1, p2, p3}, c }
+Triangle::Triangle(const Vertex p1, const Vertex p2, const Vertex p3, Material m)
+    : Polygon{ std::vector<Vertex>{p1, p2, p3}, m }
 {
 	normal = calculateNormal();
 }

@@ -1,7 +1,7 @@
 #include "Rectangle.h"
 
-Rectangle::Rectangle(const Vertex p1, const Vertex p2, const Vertex p3, const Vertex p4, const Color c)
-	: Polygon{ std::vector<Vertex>{p1, p2, p3, p4}, c }
+Rectangle::Rectangle(const Vertex p1, const Vertex p2, const Vertex p3, const Vertex p4, Material m)
+	: Polygon{ std::vector<Vertex>{p1, p2, p3, p4}, m}
 {
 	normal = calculateNormal();
 }

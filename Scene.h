@@ -40,26 +40,30 @@ public:
 	Color yellow{ 255.0, 255.0, 0.0 };
 	Color magenta{ 255.0, 0.0, 255.0 };
 	Color cyan{ 0.0, 255.0, 255.0 };
+
+	Material mirror{ "Mirror", white, 1.0 };
+	Material glass{ "Glass", white, 1.0, 1.5 };
+
 	std::vector<Polygon*> allPolygons;
 
 private:
 	
 
 	// Floor
-	Triangle floorTrig1{ {-3, 0, -5}, {0, -6, -5},  {0, 6, -5}, gray };
-	Triangle floorTrig2{ {10, 6, -5}, {10, -6, -5}, {13, 0, -5},  gray };
-	Rectangle floorRectangle{ {0, -6, -5}, {10, -6, -5}, {10, 6, -5}, {0, 6, -5}, gray };
+	Triangle floorTrig1{ {-3, 0, -5}, {0, -6, -5},  {0, 6, -5}, {"Lambertian", gray, 0.5} };
+	Triangle floorTrig2{ {10, 6, -5}, {10, -6, -5}, {13, 0, -5},  {"Lambertian", gray, 0.5} };
+	Rectangle floorRectangle{ {0, -6, -5}, {10, -6, -5}, {10, 6, -5}, {0, 6, -5}, {"Lambertian", gray, 0.5} };
 
 	// Ceiling
-	Triangle ceilTrig1{ {0, -6, 5}, {-3, 0, 5}, {0, 6, 5}, white };
-	Triangle ceilTrig2{ {13, 0, 5}, {10, -6, 5}, {10, 6, 5}, white };
-	Rectangle ceilRectangle{ {0, -6, 5},  {0, 6, 5}, {10, 6, 5}, {10, -6, 5}, white };
+	Triangle ceilTrig1{ {0, -6, 5}, {-3, 0, 5}, {0, 6, 5}, {"Lambertian", white, 0.5} };
+	Triangle ceilTrig2{ {13, 0, 5}, {10, -6, 5}, {10, 6, 5}, {"Lambertian", white, 0.5} };
+	Rectangle ceilRectangle{ {0, -6, 5},  {0, 6, 5}, {10, 6, 5}, {10, -6, 5}, {"Lambertian", white, 0.5} };
 
 	// Walls
-	Rectangle wall1{ {10, -6, -5}, {0, -6, -5}, {0, -6, 5}, {10, -6, 5}, red };
-	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, green };
-	Rectangle wall3{ {10, 6, -5}, {13, 0, -5}, {13, 0, 5}, {10, 6, 5}, blue };
-	Rectangle wall4{ {0, 6, -5}, {10, 6, -5}, {10, 6, 5}, {0, 6, 5}, yellow };
-	Rectangle wall5{ {-3, 0, -5}, {0, 6, -5}, {0, 6, 5}, {-3, 0, 5}, magenta };
-	Rectangle wall6{ {0, -6, -5}, {-3, 0, -5}, {-3, 0, 5}, {0, -6, 5}, cyan };
+	Rectangle wall1{ {10, -6, -5}, {0, -6, -5}, {0, -6, 5}, {10, -6, 5}, {"Lambertian", red, 0.5} };
+	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, mirror };
+	Rectangle wall3{ {10, 6, -5}, {13, 0, -5}, {13, 0, 5}, {10, 6, 5}, {"Lambertian", blue, 0.5} };
+	Rectangle wall4{ {0, 6, -5}, {10, 6, -5}, {10, 6, 5}, {0, 6, 5}, {"Lambertian", yellow, 0.5} };
+	Rectangle wall5{ {-3, 0, -5}, {0, 6, -5}, {0, 6, 5}, {-3, 0, 5}, {"Lambertian", magenta, 0.5} };
+	Rectangle wall6{ {0, -6, -5}, {-3, 0, -5}, {-3, 0, 5}, {0, -6, 5}, {"Lambertian", cyan, 0.5} };
 };

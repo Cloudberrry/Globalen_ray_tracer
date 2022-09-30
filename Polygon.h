@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include "glm/glm.hpp"
-#include "Definitions.h"
+#include "Material.h"
 
 class Polygon {
 public:
@@ -10,26 +10,24 @@ public:
 		--count_polygons;
 	}
 
+	Polygon(const Polygon& C) = delete;
+
 	virtual bool intersection(const Direction inDirection, const Vertex start, Vertex& intPoint) = 0;
 
 	virtual Direction calculateNormal() = 0;
 
-	Color getColor(){ return color; }
+	Material getMaterial(){ return material; }
 
 	static std::size_t get_count_polygons();
 
 protected:
 
-	Polygon(const std::vector<Vertex> P, const Color c)
-		: points{ P }, color { c } {
+	Polygon(const std::vector<Vertex> P, const Material m)
+		: points{ P }, material { m } {
 		++count_polygons;
 	}
 
-	Polygon(const Polygon& C) {
-		++count_polygons;
-	}
-
-	Color color;
+	Material material;
 	Direction normal;
 	std::vector<Vertex> points;
 

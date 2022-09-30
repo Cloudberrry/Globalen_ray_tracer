@@ -65,13 +65,15 @@ Color Camera::shotRay(Ray* ray, const std::vector<Polygon*>& P) {
 		if (P[k]->intersection(ray->getDirection(), ray->getStartingPoint(), intersectionPoint)) {
 
 			ray->setEndPoint(intersectionPoint);
-			int i = rand() % 10 + 1;
-			if (i == 10 ) {
+
+			if (P[k]->getMaterial().getType() == "Mirror") {
 				Ray* newRay = new Ray{intersectionPoint, ray->getNewDirection(ray->getDirection(), P[k]->calculateNormal()), P[k], ray};
 				ray->setNextRay(newRay);
 				ray->setRayColor(shotRay(newRay, P));
 			}
-			ray->setRayColor(P[k]->getColor());
+			else {
+				ray->setRayColor(P[k]->getMaterial().getColor());
+			}
 			return ray->getColor();
 
 			break;
