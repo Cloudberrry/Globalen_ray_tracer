@@ -1,3 +1,4 @@
 X:\TNGC15\Project\Globalen_ray_tracer\x64\Debug\Globalen_ray_tracer.exe
 X:\Documents\GitHub\Globalen_ray_tracer\x64\Debug\Globalen_ray_tracer.exe
 F:\TNCG15\Globalen_ray_tracer\x64\Debug\Globalen_ray_tracer.exe
+X:\KURSER\Globalen\Globalen_ray_tracer\x64\Debug\Globalen_ray_tracer.exe

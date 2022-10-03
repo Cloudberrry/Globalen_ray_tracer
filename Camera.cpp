@@ -58,27 +58,40 @@ void Camera::render() {
 
 Color Camera::shootRay(Ray* ray, const std::vector<Polygon*>& P) {
 
-	Vertex intersectionPoint;
-
+	Vertex intersectionPoint;		//To calculate distance
+	Vertex best_intersectionPoint;	//For final intersection
+	float smallestDist = 10000.0f;
+	Polygon* hitFace = nullptr;
 	for (int k = 0; k < P.size(); ++k) {
 
 		if (P[k]->intersection(ray->getDirection(), ray->getStartingPoint(), intersectionPoint)) {
-
-			ray->setEndPoint(intersectionPoint);
-
-			// Add ray termination condition here
-			if (P[k]->getMaterial().getType() == "Mirror") {
-				Ray* newRay = new Ray{intersectionPoint, ray->getNewDirection(ray->getDirection(), P[k]->calculateNormal()), P[k], ray};
-				ray->setNextRay(newRay);
-				ray->setRayColor(shootRay(newRay, P));
+			
+			float newDist = glm::length(intersectionPoint - ray->getStartingPoint());
+			
+			if (newDist < smallestDist) {
+				hitFace = P[k];
+				smallestDist = newDist;
+				best_intersectionPoint = intersectionPoint; //Skrivs annars över av punkte som inte är den närmaste!!
 			}
-			else {
-				ray->setRayColor(P[k]->getMaterial().getColor());
-			}
-			return ray->getColor();
-
-			break;
 		}
 	}
-	return { 0.0, 0.0, 0.0 };
+	//If no surface, return slime 
+	if(smallestDist == 10000.0f) return { 153.0f, 255.0f, 51.0f };
+	else {
+		ray->setEndPoint(best_intersectionPoint);
+
+		// Add ray termination condition here
+		if (hitFace->getMaterial().getType() == "Mirror") {
+			Ray* newRay = new Ray{ best_intersectionPoint, ray->getNewDirection(ray->getDirection(), hitFace->calculateNormal()), hitFace, ray };
+			ray->setNextRay(newRay);
+			ray->setRayColor(shootRay(newRay, P));
+		}
+		else {
+			//Light decreases relative to quadratic distance to lamp. Should be random point on lamp though for best approximation
+			//Bug where light moves in (x,y) if you change z. 
+			float lightFactor = glm::sqrt(1 / glm::length(best_intersectionPoint - (10.0f, 6.0f, 5.0f) ));
+			ray->setRayColor(hitFace->getMaterial().getColor()*lightFactor);
+		}
+		return ray->getColor();
+	}
 }
