@@ -19,9 +19,10 @@ bool Rectangle::intersection(const Direction inDirection, const Vertex start, Ve
 
 		float a = glm::dot((x - points[0]), c1) / glm::dot(c1, c1);
 		float b = glm::dot((x - points[0]), c2) / glm::dot(c2, c2);
-		float epsilon = 0.0001f;
-		if (0 <= a && a <= 1 && 0 <= b && b <= 1 || abs(a) < epsilon && b <= 1 && 0 <= b || abs(b) < epsilon && a <= 1 && 0 <= a)  {
-			refIntersection = x - inDirection;
+		float epsilon = 0.0000000000001f;
+
+		if ((0 <= a && a <= 1 && 0 <= b && b <= 1) || (abs(a) < epsilon && b <= 1 && 0 <= b) || (abs(b) < epsilon && a <= 1 && 0 <= a))  {
+			refIntersection = x; //+normal * epsilon;
 			return true;
 		}
 	}

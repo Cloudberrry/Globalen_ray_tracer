@@ -1,6 +1,4 @@
 #pragma once
-#include <iostream>
-#include <vector>
 #include <fstream>
 #include "Ray.h"
 
@@ -13,7 +11,8 @@ public:
 
 	void render();
 
-	Color shootRay(Ray* ray, const std::vector<Polygon*>& P);
+	Color shootRay(Ray*& ray, const std::vector<Polygon*>& P);
+	float dirLight(Polygon* surface, Vertex hitPoint, Direction n_x);
 
 private:
 	int height;
@@ -21,5 +20,4 @@ private:
 	std::vector<std::vector<Color>> pixelImage;
 	float iMax;
 	float pixelWidth;
-
 };

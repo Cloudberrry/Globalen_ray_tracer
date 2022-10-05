@@ -1,7 +1,7 @@
 #include "Material.h"
 
 Material::Material(std::string surfaceType, Color surfaceColor, float reflection, float refraction)
-	: type{ surfaceType }, color{ surfaceColor }, reflectionCoefficient{ reflection }, refractionIndex{ refraction } {
+	: type{ surfaceType }, color{ surfaceColor }, BRDF{ reflection }, refractionIndex{ refraction } {
 
 }
 
@@ -13,8 +13,8 @@ Color Material::getColor() {
 	return color;
 }
 
-float Material::getReflectionCoefficient() {
-	return reflectionCoefficient;
+float Material::getBRDF() {
+	return BRDF;
 }
 
 float Material::getRefractionIndex() {

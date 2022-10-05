@@ -1,14 +1,11 @@
 #pragma once
 #include <iostream>
 #include <vector>
-#include "glm/glm.hpp"
 #include "Material.h"
 
 class Polygon {
 public:
-	virtual ~Polygon() {
-		--count_polygons;
-	}
+	virtual ~Polygon() = default;
 
 	Polygon(const Polygon& C) = delete;
 
@@ -16,20 +13,17 @@ public:
 
 	virtual Direction calculateNormal() = 0;
 
-	Material getMaterial(){ return material; }
+	std::vector<Vertex> getPoints() { return points; }
 
-	static std::size_t get_count_polygons();
+	Material getMaterial() { return material; }
 
 protected:
 
 	Polygon(const std::vector<Vertex> P, const Material m)
 		: points{ P }, material { m } {
-		++count_polygons;
 	}
 
 	Material material;
 	Direction normal;
 	std::vector<Vertex> points;
-
-	static std::size_t count_polygons;
 };

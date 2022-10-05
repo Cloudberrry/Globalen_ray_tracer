@@ -5,12 +5,12 @@ Ray::Ray(Vertex startPos, Direction dir, Polygon* P, Ray* prevRay) : start{ star
 }
 
 Ray::~Ray() {
-	/*
-	Ray* temp = next->previous;
-	next->previous = previous;
-	previous->next = next;
-	delete temp;
-	*/
+	if (previous  != nullptr) {
+		previous->next = nullptr;
+	}
+
+	surface = nullptr;
+	previous = nullptr;
 }
 
 void Ray::setEndPoint(Vertex point) {
