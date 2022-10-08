@@ -31,37 +31,37 @@ public:
 	void addPolygon(Polygon* P) { allPolygons.push_back(P); }
 	
 	// Some colors
-	Color red{ 1.0, 0.0, 0.0 };
-	Color green{ 0.0, 1.0, 0.0 };
-	Color blue{ 0.0, 0.0, 1.0 };
-	Color gray{ 0.2, 0.2, 0.2 };
-	Color white{ 1.0, 1.0, 1.0 };
-	Color yellow{ 1.0, 1.0, 0.0 };
-	Color magenta{ 1.0, 0.0, 1.0 };
-	Color cyan{ 0.0, 1.0, 1.0 };
+	Color red{ 1.0f, 0.0f, 0.0f };
+	Color green{ 0.0f, 1.0f, 0.0f };
+	Color blue{ 0.0f, 0.0f, 1.0f };
+	Color gray{ 0.2f, 0.2f, 0.2f };
+	Color white{ 1.0f, 1.0f, 1.0f };
+	Color yellow{ 1.0f, 1.0f, 0.0f };
+	Color magenta{ 1.0f, 0.0f, 1.0f };
+	Color cyan{ 0.0f, 1.0f, 1.0f };
 
 
-	Material mirror{ "Mirror", white, 1.0 };
-	Material glass{ "Glass", white, 1.0, 1.5 };
-	Material lamp{ "Lamp", white, 1.0, 1.0 };
+	Material mirror{ "Mirror", white, 1.0f, 1.0f };
+	Material glass{ "Glass", white, 1.0f, 1.5f };
+	Material lamp{ "Lamp", white, 1.0f, 1.0f };
 	std::vector<Polygon*> allPolygons;
 
 private:
 	
 
 	// Floor
-	Triangle floorTrig1{ {-3, 0, -5}, {0, -6, -5},  {0, 6, -5}, {"Lambertian", white} };
-	Triangle floorTrig2{ {10, 6, -5}, {10, -6, -5}, {13, 0, -5},  {"Lambertian", white} };
-	Rectangle floorRectangle{ {0, -6, -5}, {10, -6, -5}, {10, 6, -5}, {0, 6, -5}, {"Lambertian", white} };
+	Triangle floorTrig1{ {-3, 0, -5.0f}, {0, -6, -5.0f},  {0, 6, -5.0f}, {"Lambertian", white} };
+	Triangle floorTrig2{ {10, 6, -5.0f}, {10, -6, -5.0f}, {13, 0, -5.0f},  {"Lambertian", white} };
+	Rectangle floorRectangle{ {0, -6, -5.0f}, {10, -6, -5.0f}, {10, 6, -5.0f}, {0, 6, -5.0f}, {"Lambertian", white} };
 
 	// Ceiling
-	Triangle ceilTrig1{ {0, -6, 5}, {-3, 0, 5}, {0, 6, 5}, {"Lambertian", white} };
-	Triangle ceilTrig2{ {13, 0, 5}, {10, -6, 5}, {10, 6, 5}, {"Lambertian", white} };
+	Triangle ceilTrig1{ {0, -6, 5.0f}, {-3, 0, 5.0f}, {0, 6, 5.0f}, {"Lambertian", white} };
+	Triangle ceilTrig2{ {13, 0, 5.0f}, {10, -6, 5.0f}, {10, 6, 5.0f}, {"Lambertian", white} };
 	Rectangle ceilRectangle{ {0, -6, 5.0f},  {0, 6, 5.0f}, {10, 6, 5.0f}, {10, -6, 5.0f}, {"Lambertian", white} };
 
 	// Walls
 	Rectangle wall1{ {10, -6, -5}, {0, -6, -5}, {0, -6, 5}, {10, -6, 5}, {"Lambertian", red} };
-	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, {"Lambertian", green} };
+	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, mirror};
 	Rectangle wall3{ {10, 6, -5}, {13, 0, -5}, {13, 0, 5}, {10, 6, 5}, {"Lambertian", blue} };
 	Rectangle wall4{ {0, 6, -5}, {10, 6, -5}, {10, 6, 5}, {0, 6, 5}, {"Lambertian", yellow} };
 	Rectangle wall5{ {-3, 0, -5}, {0, 6, -5}, {0, 6, 5}, {-3, 0, 5}, {"Lambertian", magenta} };

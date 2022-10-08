@@ -1,14 +1,12 @@
 #include "Rectangle.h"
 
 Rectangle::Rectangle(const Vertex p1, const Vertex p2, const Vertex p3, const Vertex p4, Material m)
-	: Polygon{ std::vector<Vertex>{p1, p2, p3, p4}, m}
-{
+	: Polygon{ std::vector<Vertex>{p1, p2, p3, p4}, m} {
 	normal = calculateNormal();
 }
 
-bool Rectangle::intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection)
-{
-	if (glm::dot(inDirection, normal) < 0) {
+bool Rectangle::intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection) {
+	if (glm::dot(inDirection, normal) < 0.0f) {
 		float t = glm::dot((points[0] - start), normal) / glm::dot(inDirection, normal);
 
 
@@ -21,15 +19,14 @@ bool Rectangle::intersection(const Direction inDirection, const Vertex start, Ve
 		float b = glm::dot((x - points[0]), c2) / glm::dot(c2, c2);
 		float epsilon = 0.0000000000001f;
 
-		if ((0 <= a && a <= 1 && 0 <= b && b <= 1) || (abs(a) < epsilon && b <= 1 && 0 <= b) || (abs(b) < epsilon && a <= 1 && 0 <= a))  {
-			refIntersection = x; //+normal * epsilon;
+		if ((0 <= a && a <= 1 && 0 <= b && b <= 1) || (abs(a) < epsilon && b <= 1 && b >= 0) || (abs(b) < epsilon && a <= 1 && a >= 0))  {
+			refIntersection = x + normal * epsilon;
 			return true;
 		}
 	}
     return false;
 }
 
-Direction Rectangle::calculateNormal()
-{
+Direction Rectangle::calculateNormal() {
 	return glm::normalize(glm::cross(points[1] - points[0], points[2] - points[1]));
 }

@@ -69,7 +69,7 @@ Color Camera::shootRay(Ray*& ray, const std::vector<Polygon*>& P) {
 
 	Vertex intersectionPoint = { 0.0f, 0.0f, 0.0f };		//To calculate distance
 	Vertex best_intersectionPoint = { 0.0f, 0.0f, 0.0f };	//For final intersection
-	float smallestDist = 100000.0f;
+	float smallestDist = 10000000.0f;
 	Polygon* hitFace = nullptr;
 
 	for (int k = 0; k < P.size(); ++k) {
@@ -86,29 +86,55 @@ Color Camera::shootRay(Ray*& ray, const std::vector<Polygon*>& P) {
 		}
 	}
 
-	if (smallestDist > 99999.0f) {
-		return { 0.0f, 0.0f, 0.0f };
+	std::string type;
+
+	if (hitFace == nullptr) {
+		type = "NoSurface";
 	}
-
-	ray->setEndPoint(best_intersectionPoint);
-	Color incomingRayColor = {0.0f, 0.0f, 0.0f};
-
+	else {
+		type = hitFace->getMaterial().getType();
+	}
+	
+	Color incomingRayColor;
 	int random = std::rand() % 5;
+	
+	if (type == "Lamp") {
 
-	// Add ray termination condition here
-	if (hitFace->getMaterial().getType() == "Lamp") {
-		return {1.0f, 1.0f, 1.0f};
-	} else if (random != 0) {
+		ray->setEndPoint(best_intersectionPoint);
+		ray->setRayColor({ 1.0f, 1.0f, 1.0f });
+
+	} else if (type == "Mirror" && random != 0) {
+
+		ray->setEndPoint(best_intersectionPoint);
+
 		Ray* newRay = new Ray{ best_intersectionPoint, ray->getNewDirection(ray->getDirection(), hitFace->calculateNormal()), hitFace, ray };
 		ray->setNextRay(newRay);
 
 		incomingRayColor = shootRay(newRay, P);
-		
+
 		delete newRay;
 		newRay = nullptr;
+
+		ray->setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor);
+
+	} else if (type == "Lambertian" && random != 0) {
+
+		ray->setEndPoint(best_intersectionPoint);
+
+		Ray* newRay = new Ray{ best_intersectionPoint, ray->getNewDirection(ray->getDirection(), hitFace->calculateNormal()), hitFace, ray };
+		ray->setNextRay(newRay);
+
+		incomingRayColor = shootRay(newRay, P);
+
+		delete newRay;
+		newRay = nullptr;
+
+		ray->setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * (dirLight(P[0], best_intersectionPoint, hitFace->calculateNormal()) + incomingRayColor));
+
+	} else {
+		ray->setRayColor({ 1.0f, 1.0f, 1.0f });
 	}
 
-	ray->setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * (dirLight(P[0], best_intersectionPoint, hitFace->calculateNormal()) + incomingRayColor));
 	return ray->getColor();
 }
 
@@ -120,7 +146,8 @@ float Camera::dirLight(Polygon* surface, Vertex hitPoint, Direction n_x) {
 	Direction e2 = surface->getPoints()[3] - surface->getPoints()[0];
 
 	float lightArea = glm::length(e1) * glm::length(e2);
-	float w = lightArea*32.0f;
+	/*float w = lightArea*32.0f;*/
+	float w = 10000.0f;
 	float accLight = 0.0;
 	int counter = 0;
 	int itMax = 20;
