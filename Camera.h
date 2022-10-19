@@ -11,8 +11,8 @@ public:
 
 	void render();
 
-	Color shootRay(Ray*& ray, const std::vector<Polygon*>& P);
-	float dirLight(Polygon* surface, Vertex hitPoint, Direction n_x);
+	Color shootRay(Ray& ray, const std::vector<Polygon*>& P);
+	float shootShadowRay(Polygon* surface, Vertex hitPoint, Direction n_x);
 
 private:
 	int height;

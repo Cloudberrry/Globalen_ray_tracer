@@ -21,7 +21,7 @@ public:
 
 	Direction getDirection();
 
-	Direction getNewDirection(Direction inDirection, Direction normal);
+	Direction calculateNewDirection(Direction inDirection, Direction normal);
 
 	Color getColor();
 

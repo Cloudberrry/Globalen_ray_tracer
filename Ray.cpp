@@ -33,8 +33,8 @@ Direction Ray::getDirection() {
 	return direction;
 }
 
-Direction Ray::getNewDirection(Direction inDirection, Direction normal) {
-	return glm::normalize(inDirection - 2*glm::dot(inDirection, normal) * normal);
+Direction Ray::calculateNewDirection(Direction inDirection, Direction normal) {
+	return glm::normalize(inDirection - 2*glm::dot(inDirection, normal)*normal);
 }
 
 Color Ray::getColor() {

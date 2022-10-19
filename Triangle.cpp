@@ -21,10 +21,10 @@ bool Triangle::intersection(const Direction inDirection, const Vertex start, Ver
 		float u = result.y;
 		float v = result.z;
 
-		float epsilon = 0.0000000000001f;
+		float epsilon = 0.000001f;
 
-		if ((0 <= u && 0 <= v && (u + v) <= 1) || (abs(u) < epsilon && v <= 1 && v >= 0) || (abs(v) < epsilon && u <= 1 && u >= 0)) {
-			refIntersection = start + t * D + normal * epsilon;
+		if ((0.0f <= u && 0.0f <= v && (u + v) <= 1.0f) || (abs(u) < epsilon && 0.0f <= v && v <= 1.0f ) || (abs(v) < epsilon && 0.0f <= u && u <= 1.0f)) {
+			refIntersection = start + t * D;
 			return true;
 		}
 	}

@@ -39,6 +39,7 @@ public:
 	Color yellow{ 1.0f, 1.0f, 0.0f };
 	Color magenta{ 1.0f, 0.0f, 1.0f };
 	Color cyan{ 0.0f, 1.0f, 1.0f };
+	Color custom{ 0.26666, 0.3333333, 0.352941};
 
 
 	Material mirror{ "Mirror", white, 1.0f, 1.0f };
@@ -68,5 +69,5 @@ private:
 	Rectangle wall6{ {0, -6, -5}, {-3, 0, -5}, {-3, 0, 5}, {0, -6, 5}, {"Lambertian", cyan} };
 
 	//add lamp
-	Rectangle ceilLamp{ {2.0f, -2.0f, 5.0f},  {2, 2, 5.0f}, {6, 2, 5.0f}, {6, -2, 5.0f}, lamp };
+	Rectangle ceilLamp{ {7.0f, -1.0f, 5.0f},  {7.0f, 1.0f, 5.0f}, {9.0f, 1.0f, 5.0f}, {9.0f, -1.0f, 5.0f}, lamp };
 };

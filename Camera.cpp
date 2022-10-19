@@ -16,19 +16,20 @@ void Camera::setPixels(const std::vector<Polygon*>& P) {
 	Vertex pixelPos;
 	Vertex eyePosition = {-1.0, 0.0, 0.0};
 	Direction currentDirection;
-	Ray* firstRay;
+	
 
 	for (int i = 0; i < height; ++i) {
 		for (int j = 0; j < width; ++j) {
 
 			pixelPos = { 0.0, j * pixelWidth - (1.0 - pixelWidth), i * pixelWidth - (1.0 - pixelWidth) };
 			currentDirection = glm::normalize(pixelPos - eyePosition);
-			firstRay = new Ray{ pixelPos, currentDirection };
+			Ray firstRay{ pixelPos, currentDirection };
 			
 			Color average_color = { 0.0, 0.0, 0.0 };
 			for (int a = 0; a < samples; ++a) {
 				average_color += shootRay(firstRay, P);
 			}
+
 			average_color = { average_color.x * 255.0f / samples, average_color.y * 255.0f / samples, average_color.z * 255.0f / samples };
 			//average_color = { sqrt(average_color.x * 255.0f / samples), sqrt(average_color.y * 255.0f / samples), sqrt(average_color.z * 255.0f / samples) };
 		
@@ -39,8 +40,6 @@ void Camera::setPixels(const std::vector<Polygon*>& P) {
 			if ( newiMax > iMax) {
 				iMax = newiMax;
 			}
-			delete firstRay;
-			firstRay = nullptr;
 		}
 	}
 }
@@ -65,18 +64,22 @@ void Camera::render() {
 	std::cout << "Finished" << std::endl;
 }
 
-Color Camera::shootRay(Ray*& ray, const std::vector<Polygon*>& P) {
+Color Camera::shootRay(Ray& ray, const std::vector<Polygon*>& P) {
 
-	Vertex intersectionPoint = { 0.0f, 0.0f, 0.0f };		//To calculate distance
-	Vertex best_intersectionPoint = { 0.0f, 0.0f, 0.0f };	//For final intersection
-	float smallestDist = 10000000.0f;
+	Vertex intersectionPoint;		// To calculate distance
+	Vertex best_intersectionPoint;	// For final intersection
+	Direction currentNormal;
+	Color incomingRayColor;
 	Polygon* hitFace = nullptr;
+	std::string type;
+	int random = std::rand() % 5;
+	float smallestDist = 10000000.0f;
 
 	for (int k = 0; k < P.size(); ++k) {
 
-		if (P[k]->intersection(ray->getDirection(), ray->getStartingPoint(), intersectionPoint)) {
+		if (P[k]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
 			
-			float newDist = glm::length(intersectionPoint - ray->getStartingPoint());
+			float newDist = glm::length(intersectionPoint - ray.getStartingPoint());
 			
 			if (newDist < smallestDist) {
 				hitFace = P[k];
@@ -86,68 +89,74 @@ Color Camera::shootRay(Ray*& ray, const std::vector<Polygon*>& P) {
 		}
 	}
 
-	std::string type;
 
+	// Ska egentligen inte hända, men det händer, varför träffar vi inte en yta....
 	if (hitFace == nullptr) {
 		type = "NoSurface";
+		ray.setRayColor({0.75f, 1.0f, 0.6f });
+		return ray.getColor();
 	}
-	else {
-		type = hitFace->getMaterial().getType();
+
+	if (random == 0) {
+		return hitFace->getMaterial().getColor();
 	}
-	
-	Color incomingRayColor;
-	int random = std::rand() % 5;
+
+	type = hitFace->getMaterial().getType();
+	currentNormal = hitFace->calculateNormal();
 	
 	if (type == "Lamp") {
 
-		ray->setEndPoint(best_intersectionPoint);
-		ray->setRayColor({ 1.0f, 1.0f, 1.0f });
+		ray.setEndPoint(best_intersectionPoint);
+		ray.setRayColor({ 1.0f, 1.0f, 1.0f });
 
 	} else if (type == "Mirror" && random != 0) {
 
-		ray->setEndPoint(best_intersectionPoint);
+		ray.setEndPoint(best_intersectionPoint);
 
-		Ray* newRay = new Ray{ best_intersectionPoint, ray->getNewDirection(ray->getDirection(), hitFace->calculateNormal()), hitFace, ray };
-		ray->setNextRay(newRay);
+		Ray newRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
+		ray.setNextRay(&newRay);
 
-		incomingRayColor = shootRay(newRay, P);
+		incomingRayColor = shootRay(newRay, P); // Shoot the newly created ray into the scene
 
-		delete newRay;
-		newRay = nullptr;
+		ray.setRayColor(incomingRayColor * hitFace->getMaterial().getColor()); // Could multiply with surface color to get a tinted mirror
 
-		ray->setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor);
+	} else if (type == "Lambertian") {
 
-	} else if (type == "Lambertian" && random != 0) {
+		ray.setEndPoint(best_intersectionPoint);
 
-		ray->setEndPoint(best_intersectionPoint);
+		int a = rand();
+		int b = rand();
+		int c = rand();
+		Direction new_dir = glm::normalize(Direction{ a, b, c });
 
-		Ray* newRay = new Ray{ best_intersectionPoint, ray->getNewDirection(ray->getDirection(), hitFace->calculateNormal()), hitFace, ray };
-		ray->setNextRay(newRay);
+		// Checks if the new direction vector goes back into the surface, if so we flip it to always get a direction out from the surface
+		if (glm::dot(currentNormal, new_dir) < 0) {
+			new_dir = -new_dir;
+		}
 
-		incomingRayColor = shootRay(newRay, P);
+		glm::dot(currentNormal, new_dir) / (glm::length(new_dir));
 
-		delete newRay;
-		newRay = nullptr;
+		// Creates a new ray depending on the new direction
+		Ray newRay{ best_intersectionPoint, new_dir, hitFace, &ray };
+		ray.setNextRay(&newRay);
 
-		ray->setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * (dirLight(P[0], best_intersectionPoint, hitFace->calculateNormal()) + incomingRayColor));
-
-	} else {
-		ray->setRayColor({ 1.0f, 1.0f, 1.0f });
+		incomingRayColor = shootRay(newRay, P); // Shoot the newly created ray into the scene
+		
+		ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * (incomingRayColor + shootShadowRay(P[0], best_intersectionPoint, currentNormal)));
+	
 	}
 
-	return ray->getColor();
+	return ray.getColor();
 }
 
 //Hur får vi tag på ljuset?
-float Camera::dirLight(Polygon* surface, Vertex hitPoint, Direction n_x) {
-	
+float Camera::shootShadowRay(Polygon* surface, Vertex hitPoint, Direction n_x) {
 	
 	Direction e1 = surface->getPoints()[1] - surface->getPoints()[0];
 	Direction e2 = surface->getPoints()[3] - surface->getPoints()[0];
 
 	float lightArea = glm::length(e1) * glm::length(e2);
-	/*float w = lightArea*32.0f;*/
-	float w = 10000.0f;
+	float w = lightArea * 50.f;
 	float accLight = 0.0;
 	int counter = 0;
 	int itMax = 20;
