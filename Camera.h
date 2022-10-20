@@ -1,5 +1,6 @@
 #pragma once
 #include <fstream>
+#include <random>
 #include "Scene.h"
 #include "Ray.h"
 
@@ -13,7 +14,7 @@ public:
 	void render();
 
 	Color shootRay(Ray& ray, const Scene& S);
-	float shootShadowRays(const Scene& S, Vertex hitPoint, Direction n_x);
+	Color shootShadowRays(const Scene& S, Surface* hitSurface, Vertex hitPoint, Direction n_x);
 
 private:
 	int height;

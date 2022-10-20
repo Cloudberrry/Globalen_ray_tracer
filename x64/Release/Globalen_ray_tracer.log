@@ -1,9 +1,14 @@
 ﻿  Camera.cpp
-F:\TNCG15\Globalen_ray_tracer\Camera.cpp(146,36): warning C4552: '/': result of expression not used
-F:\TNCG15\Globalen_ray_tracer\Camera.cpp(213,30): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+F:\TNCG15\Globalen_ray_tracer\Camera.cpp(146,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Material.cpp
+  Ray.cpp
+  Rectangle.cpp
+  Sphere.cpp
+  Triangle.cpp
+  main.cpp
   Generating code
-  2 of 397 functions ( 0.5%) were compiled, the rest were copied from previous compilation.
+  1 of 415 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    8 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Globalen_ray_tracer.vcxproj -> F:\TNCG15\Globalen_ray_tracer\x64\Release\Globalen_ray_tracer.exe

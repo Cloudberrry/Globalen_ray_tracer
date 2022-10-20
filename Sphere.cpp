@@ -9,14 +9,13 @@ bool Sphere::intersection(const Direction inDirection, const Vertex start, Verte
 	Direction directionVector = (start - points[0]);
 
 	float c1 = glm::dot(inDirection, inDirection);
-	float c2 = 2*glm::dot(inDirection, directionVector);
-	float c3 = glm::dot(directionVector, directionVector) - pow(radius, 2);
+	float c2 = 2.0f*glm::dot(inDirection, directionVector);
+	float c3 = glm::dot(directionVector, directionVector) - powf(radius, 2.0f);
 
-	float arg = pow(c2, 2) - 4.0f * c1 * c3;
+	float arg = powf(c2, 2.0f) - 4.0f * c1 * c3;
 	float epsilon = 0.00001f;
 
 	if(abs(arg) < epsilon) {
-		//float t = -(c2 + sqrt(arg)) / (2 * c1);
 		return false;
 	}
 	else if(arg > 0) {
@@ -28,7 +27,7 @@ bool Sphere::intersection(const Direction inDirection, const Vertex start, Verte
 		Direction xr = start + inDirection * t;
 		refIntersection = xr;
 
-		normal = glm::normalize(xr - points[0]);
+		normal = glm::normalize((xr - points[0]));
 
 		return true;
 	}

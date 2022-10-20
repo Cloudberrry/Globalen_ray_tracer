@@ -10,7 +10,7 @@ Camera::Camera(int pixHeight, int pixWidth) : height{ pixHeight }, width{ pixWid
 
 void Camera::setPixels(const Scene& S) {
 
-	int samples = 10;
+	int samples = 11;
 	float newiMax;
 	Vertex pixelPos;
 	Vertex eyePosition = {-1.0, 0.0, 0.0};
@@ -133,26 +133,46 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 
 	} else if (type == "Lambertian") {
 
-		int a = rand();
-		int b = rand();
-		int c = rand();
-		Direction new_dir = glm::normalize(Direction{ a, b, c });
+		// Create uniformly distributed numbers between -1 and 1
+		std::random_device rand_dev;
+		std::mt19937 generator{ rand_dev() };
+		std::uniform_real_distribution<float> distribution{ 0.0f, 1.0f };
 
-		// Checks if the new direction vector goes back into the surface, if so we flip it to always get a direction out from the surface
-		if (glm::dot(currentNormal, new_dir) < 0) {
-			new_dir = -new_dir;
-		}
+		// The random number
+		float y = distribution(generator);
 
-		glm::dot(currentNormal, new_dir) / (glm::length(new_dir));
+		// Inclination angle and azemut depending on the random number
+		float inclinationAngle = acos(sqrt(1 - y));
+		float azemut = 2.0f * M_PI * y;
+
+		// Calculate where the new direction would intersect the hemisphere
+		Vertex xO = { cos(azemut) * sin(inclinationAngle), sin(azemut) * sin(inclinationAngle), cos(inclinationAngle)};
+
+		// Local coordinate system
+		Direction xL = glm::normalize(-ray.getDirection() + glm::dot(currentNormal, ray.getDirection()) * currentNormal);
+		Direction zL = currentNormal;
+		Direction yL = glm::cross(zL, xL);
+
+		// Calculate the intersection point between hemisphere and the outgoing ray
+		Vertex xW = {
+			xO.x * xL.x + xO.y * yL.x + xO.z * zL.x,
+			xO.x * xL.y + xO.y * yL.y + xO.z * zL.y,
+			xO.x * xL.z + xO.y * yL.z + xO.z * zL.z
+		};
+
+		// Calculate the new direction
+		Direction newDirection = xW - best_intersectionPoint;
 
 		// Creates a new ray depending on the new direction
-		Ray newRay{ best_intersectionPoint, new_dir, hitFace, &ray };
+		Ray newRay{ best_intersectionPoint, newDirection, hitFace, &ray };
 		ray.setNextRay(&newRay);
 
-		incomingRayColor = shootRay(newRay, S); // Shoot the newly created ray into the scene
+		// Shoot a new ray into the scene
+		incomingRayColor = shootRay(newRay, S);
 		
-		ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * (incomingRayColor + shootShadowRays(S, best_intersectionPoint, currentNormal)));
-		//ray.setRayColor(hitFace->getMaterial().getColor() * hitFace->getMaterial().getBRDF() * incomingRayColor * shootShadowRays(S, best_intersectionPoint, currentNormal));
+		// Set ray color depending on the incoming ray color and the direct light
+		//ray.setRayColor( hitFace->getMaterial().getColor() * incomingRayColor + shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
+		ray.setRayColor(hitFace->getMaterial().getColor() * hitFace->getMaterial().getBRDF() * (incomingRayColor + shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal)));
 	
 	}
 
@@ -160,62 +180,58 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 }
 
 
-float Camera::shootShadowRays(const Scene& S, Vertex hitPoint, Direction n_x) {
+Color Camera::shootShadowRays(const Scene& S, Surface* hitSurface, Vertex hitPoint ,Direction n_x) {
 	
+	std::random_device rand_dev;
+	std::mt19937 generator{ rand_dev() };
+	std::uniform_real_distribution<float> distribution{ 0.0f, 1.0f };
+
 	Surface* lamp = S.polygons[0];
 	Direction e1 = lamp->getPoints()[1] - lamp->getPoints()[0];
 	Direction e2 = lamp->getPoints()[3] - lamp->getPoints()[0];
-	Direction distance;
-	Vertex lampCoord;
 	Vertex intersectionPoint;
+	Color accLight = { 0.0f, 0.0f, 0.0f };
+
 	float lightArea = glm::length(e1) * glm::length(e2);
-	float w = lightArea * 30.f;
-	float accLight = 0.0;
-	float rand1;
-	float rand2;
-	float distLen;
-	float cosy;
-	float cosx;
+	float w = lightArea * 40.0f;
+	float V = 1.0f;
+
 	int counter = 0;
-	int itMax = 1;
+	int numberOfShadowRays = 20;
 
 	if (glm::dot(n_x, lamp->getNormal()) > 0) {
-		return 0.0f;
+		return { 0.0f , 0.0f, 0.0f };
 	}
 
-	while (counter < itMax) {
-		rand1 = (float)(std::rand() % 100) / 100;
-		rand2 = (float)(std::rand() % 100) / 100;
-		//lampCoord = lamp->getPoints()[0] + rand1 * e1 + rand2 * e2;
-		lampCoord = lamp->getPoints()[0];
-		distance = lampCoord - hitPoint;
-		distLen = glm::length(distance);
-		float newDist;
+	while (counter < numberOfShadowRays) {
 
-		bool shadow = false;
+		float rand1 = distribution(generator);
+		float rand2 = distribution(generator);
+
+		Vertex lampCoordinate = lamp->getPoints()[0] + rand1 * e1 + rand2 * e2;
+
+		Direction distance = lampCoordinate - hitPoint;
+		float distLen = glm::length(distance);
 
 		for (int i = 0; i < S.spheres.size(); ++i) {
 			if (S.spheres[i]->intersection(distance, hitPoint, intersectionPoint)) {
 
-				newDist = glm::length(intersectionPoint - hitPoint);
+				float newDist = glm::length(intersectionPoint - hitPoint);
 
 				if (newDist < distLen) {
-					shadow = true;
+					V = 0.0; // The pixel is in shadow
 					break;
 				}
 			}
 		}
 
-		//Om lampan är närmare än någon annan yta i normalriktningen
-		if(!shadow) {
-			cosy = glm::dot(-lamp->getNormal(), distance) / distLen;
-			cosx = glm::dot(n_x, distance) / distLen;
-			accLight += (cosy * cosx) / pow(distLen,2);	
-		}
+		Direction cosy = -1.0f*lamp->getNormal() * distance / distLen;
+		Direction cosx = n_x * distance / distLen;
+		accLight += V * (cosy * cosx) / powf(distLen, 2.0f);
 
 		++counter;
 	}
 
-	accLight = accLight * (w / float(counter));
+	accLight = accLight * (w / numberOfShadowRays);
 	return accLight;
 }
