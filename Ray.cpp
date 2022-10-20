@@ -1,6 +1,6 @@
 #include "Ray.h"
 
-Ray::Ray(Vertex startPos, Direction dir, Polygon* P, Ray* prevRay) : start{ startPos }, direction{ dir }, previous{ prevRay } {
+Ray::Ray(Vertex startPos, Direction dir, Surface* P, Ray* prevRay) : start{ startPos }, direction{ dir }, surface{ P }, previous{ prevRay } {
 
 }
 
@@ -41,6 +41,6 @@ Color Ray::getColor() {
 	return color;
 }
 
-Polygon* Ray::getSurface() {
+Surface* Ray::getSurface() {
 	return surface;
 }

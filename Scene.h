@@ -1,34 +1,37 @@
 #pragma once
 #include "Triangle.h"
 #include "Rectangle.h"
+#include "Sphere.h"
 
 class Scene {
 public:
 	Scene() {
 
 		// Add lights
-		allPolygons.push_back(&ceilLamp);
+		polygons.push_back(&ceilLamp);
 
 		// Adds the polygons for the floor
-		allPolygons.push_back(&floorTrig1);
-		allPolygons.push_back(&floorTrig2);
-		allPolygons.push_back(&floorRectangle);
+		polygons.push_back(&floorTrig1);
+		polygons.push_back(&floorTrig2);
+		polygons.push_back(&floorRectangle);
 
 		// Adds the polygons for the ceiling
-		allPolygons.push_back(&ceilTrig1);
-		allPolygons.push_back(&ceilTrig2);
-		allPolygons.push_back(&ceilRectangle);
+		polygons.push_back(&ceilTrig1);
+		polygons.push_back(&ceilTrig2);
+		polygons.push_back(&ceilRectangle);
 
 		// Adds the polygons for the walls
-		allPolygons.push_back(&wall1);
-		allPolygons.push_back(&wall2);
-		allPolygons.push_back(&wall3);
-		allPolygons.push_back(&wall4);
-		allPolygons.push_back(&wall5);
-		allPolygons.push_back(&wall6);
+		polygons.push_back(&wall1);
+		polygons.push_back(&wall2);
+		polygons.push_back(&wall3);
+		polygons.push_back(&wall4);
+		polygons.push_back(&wall5);
+		polygons.push_back(&wall6);
+
+		spheres.push_back(&sphere1);
 	}
 
-	void addPolygon(Polygon* P) { allPolygons.push_back(P); }
+	void addPolygon(Surface* P) { polygons.push_back(P); }
 	
 	// Some colors
 	Color red{ 1.0f, 0.0f, 0.0f };
@@ -39,13 +42,14 @@ public:
 	Color yellow{ 1.0f, 1.0f, 0.0f };
 	Color magenta{ 1.0f, 0.0f, 1.0f };
 	Color cyan{ 0.0f, 1.0f, 1.0f };
-	Color custom{ 0.26666, 0.3333333, 0.352941};
+	Color custom{ 0.75f, 1.0f, 0.6f };
 
 
 	Material mirror{ "Mirror", white, 1.0f, 1.0f };
 	Material glass{ "Glass", white, 1.0f, 1.5f };
 	Material lamp{ "Lamp", white, 1.0f, 1.0f };
-	std::vector<Polygon*> allPolygons;
+	std::vector<Surface*> polygons;
+	std::vector<Surface*> spheres;
 
 private:
 	
@@ -68,6 +72,9 @@ private:
 	Rectangle wall5{ {-3, 0, -5}, {0, 6, -5}, {0, 6, 5}, {-3, 0, 5}, {"Lambertian", magenta} };
 	Rectangle wall6{ {0, -6, -5}, {-3, 0, -5}, {-3, 0, 5}, {0, -6, 5}, {"Lambertian", cyan} };
 
-	//add lamp
-	Rectangle ceilLamp{ {7.0f, -1.0f, 5.0f},  {7.0f, 1.0f, 5.0f}, {9.0f, 1.0f, 5.0f}, {9.0f, -1.0f, 5.0f}, lamp };
+	// Add lamp
+	Rectangle ceilLamp{ {6.0f, -1.0f, 5.0f},  {6.0f, 1.0f, 5.0f}, {8.0f, 1.0f, 5.0f}, {8.0f, -1.0f, 5.0f}, lamp };
+
+	// Spheres
+	Sphere sphere1{ {8.0f, 0.0f, 0.0f}, 2.0f, {"Lambertian", red} };
 };

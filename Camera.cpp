@@ -8,10 +8,9 @@ Camera::Camera(int pixHeight, int pixWidth) : height{ pixHeight }, width{ pixWid
 }
 
 
-void Camera::setPixels(const std::vector<Polygon*>& P) {
+void Camera::setPixels(const Scene& S) {
 
 	int samples = 10;
-	
 	float newiMax;
 	Vertex pixelPos;
 	Vertex eyePosition = {-1.0, 0.0, 0.0};
@@ -27,7 +26,7 @@ void Camera::setPixels(const std::vector<Polygon*>& P) {
 			
 			Color average_color = { 0.0, 0.0, 0.0 };
 			for (int a = 0; a < samples; ++a) {
-				average_color += shootRay(firstRay, P);
+				average_color += shootRay(firstRay, S);
 			}
 
 			average_color = { average_color.x * 255.0f / samples, average_color.y * 255.0f / samples, average_color.z * 255.0f / samples };
@@ -54,9 +53,9 @@ void Camera::render() {
 	// Portable pixel map(ppm) writes the coordinates starting from the top left corner and goes down to the bottom right
 	for (int i = height-1; i >= 0; --i) {
 		for (int j = width-1; j >= 0; --j) {
-			ofs << (unsigned char)((pixelImage[i][j].r) * (float)255 / iMax) <<
-				(unsigned char)((pixelImage[i][j].g) * (float)255 / iMax) <<
-				(unsigned char)((pixelImage[i][j].b) * (float)255 / iMax);
+			ofs << (unsigned char)((pixelImage[i][j].r) * 255.0f / iMax) <<
+				(unsigned char)((pixelImage[i][j].g) * 255.0f / iMax) <<
+				(unsigned char)((pixelImage[i][j].b) * 255.0f / iMax);
 		}
 	}
 	ofs.close();
@@ -64,36 +63,50 @@ void Camera::render() {
 	std::cout << "Finished" << std::endl;
 }
 
-Color Camera::shootRay(Ray& ray, const std::vector<Polygon*>& P) {
+Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>& P) {
 
 	Vertex intersectionPoint;		// To calculate distance
 	Vertex best_intersectionPoint;	// For final intersection
 	Direction currentNormal;
 	Color incomingRayColor;
-	Polygon* hitFace = nullptr;
+	Surface* hitFace = nullptr;
 	std::string type;
-	int random = std::rand() % 5;
+	int random = std::rand() % 3;
 	float smallestDist = 10000000.0f;
 
-	for (int k = 0; k < P.size(); ++k) {
+	for (int k = 0; k < S.polygons.size(); ++k) {
 
-		if (P[k]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
+		if (S.polygons[k]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
 			
 			float newDist = glm::length(intersectionPoint - ray.getStartingPoint());
 			
 			if (newDist < smallestDist) {
-				hitFace = P[k];
+				hitFace = S.polygons[k];
 				smallestDist = newDist;
 				best_intersectionPoint = intersectionPoint; //Skrivs annars över av punkte som inte är den närmaste!!
+				currentNormal = hitFace->getNormal();
 			}
 		}
 	}
 
+	for (int i = 0; i < S.spheres.size(); ++i) {
+		if (S.spheres[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
+
+			float newDist = glm::length(intersectionPoint - ray.getStartingPoint());
+
+			if (newDist < smallestDist) {
+				hitFace = S.spheres[i];
+				smallestDist = newDist;
+				best_intersectionPoint = intersectionPoint; //Skrivs annars över av punkte som inte är den närmaste!!
+				currentNormal = hitFace->getNormal();
+			}
+		}
+	}
 
 	// Ska egentligen inte hända, men det händer, varför träffar vi inte en yta....
 	if (hitFace == nullptr) {
 		type = "NoSurface";
-		ray.setRayColor({0.75f, 1.0f, 0.6f });
+		ray.setRayColor(S.custom);
 		return ray.getColor();
 	}
 
@@ -101,28 +114,24 @@ Color Camera::shootRay(Ray& ray, const std::vector<Polygon*>& P) {
 		return hitFace->getMaterial().getColor();
 	}
 
+	ray.setEndPoint(best_intersectionPoint);
 	type = hitFace->getMaterial().getType();
-	currentNormal = hitFace->calculateNormal();
+	
 	
 	if (type == "Lamp") {
 
-		ray.setEndPoint(best_intersectionPoint);
-		ray.setRayColor({ 1.0f, 1.0f, 1.0f });
+		ray.setRayColor(S.white);
 
-	} else if (type == "Mirror" && random != 0) {
-
-		ray.setEndPoint(best_intersectionPoint);
+	} else if (type == "Mirror") {
 
 		Ray newRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
 		ray.setNextRay(&newRay);
 
-		incomingRayColor = shootRay(newRay, P); // Shoot the newly created ray into the scene
+		incomingRayColor = shootRay(newRay, S); // Shoot the newly created ray into the scene
 
 		ray.setRayColor(incomingRayColor * hitFace->getMaterial().getColor()); // Could multiply with surface color to get a tinted mirror
 
 	} else if (type == "Lambertian") {
-
-		ray.setEndPoint(best_intersectionPoint);
 
 		int a = rand();
 		int b = rand();
@@ -140,48 +149,73 @@ Color Camera::shootRay(Ray& ray, const std::vector<Polygon*>& P) {
 		Ray newRay{ best_intersectionPoint, new_dir, hitFace, &ray };
 		ray.setNextRay(&newRay);
 
-		incomingRayColor = shootRay(newRay, P); // Shoot the newly created ray into the scene
+		incomingRayColor = shootRay(newRay, S); // Shoot the newly created ray into the scene
 		
-		ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * (incomingRayColor + shootShadowRay(P[0], best_intersectionPoint, currentNormal)));
+		ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * (incomingRayColor + shootShadowRays(S, best_intersectionPoint, currentNormal)));
+		//ray.setRayColor(hitFace->getMaterial().getColor() * hitFace->getMaterial().getBRDF() * incomingRayColor * shootShadowRays(S, best_intersectionPoint, currentNormal));
 	
 	}
 
 	return ray.getColor();
 }
 
-//Hur får vi tag på ljuset?
-float Camera::shootShadowRay(Polygon* surface, Vertex hitPoint, Direction n_x) {
-	
-	Direction e1 = surface->getPoints()[1] - surface->getPoints()[0];
-	Direction e2 = surface->getPoints()[3] - surface->getPoints()[0];
 
+float Camera::shootShadowRays(const Scene& S, Vertex hitPoint, Direction n_x) {
+	
+	Surface* lamp = S.polygons[0];
+	Direction e1 = lamp->getPoints()[1] - lamp->getPoints()[0];
+	Direction e2 = lamp->getPoints()[3] - lamp->getPoints()[0];
+	Direction distance;
+	Vertex lampCoord;
+	Vertex intersectionPoint;
 	float lightArea = glm::length(e1) * glm::length(e2);
-	float w = lightArea * 50.f;
+	float w = lightArea * 30.f;
 	float accLight = 0.0;
-	int counter = 0;
-	int itMax = 20;
 	float rand1;
 	float rand2;
-	Vertex lampCoord;
-	Direction distance;
 	float distLen;
 	float cosy;
 	float cosx;
+	int counter = 0;
+	int itMax = 1;
+
+	if (glm::dot(n_x, lamp->getNormal()) > 0) {
+		return 0.0f;
+	}
 
 	while (counter < itMax) {
 		rand1 = (float)(std::rand() % 100) / 100;
 		rand2 = (float)(std::rand() % 100) / 100;
-		lampCoord = surface->getPoints()[0] + rand1 * e1 + rand2 * e2;
+		//lampCoord = lamp->getPoints()[0] + rand1 * e1 + rand2 * e2;
+		lampCoord = lamp->getPoints()[0];
 		distance = lampCoord - hitPoint;
 		distLen = glm::length(distance);
+		float newDist;
 
-		cosy = glm::dot(-surface->calculateNormal(), distance) / distLen;
-		cosx = glm::dot(n_x, distance) / distLen;
+		bool shadow = false;
 
-		accLight += (cosy * cosx) / (distLen * distLen);
+		for (int i = 0; i < S.spheres.size(); ++i) {
+			if (S.spheres[i]->intersection(distance, hitPoint, intersectionPoint)) {
+
+				newDist = glm::length(intersectionPoint - hitPoint);
+
+				if (newDist < distLen) {
+					shadow = true;
+					break;
+				}
+			}
+		}
+
+		//Om lampan är närmare än någon annan yta i normalriktningen
+		if(!shadow) {
+			cosy = glm::dot(-lamp->getNormal(), distance) / distLen;
+			cosx = glm::dot(n_x, distance) / distLen;
+			accLight += (cosy * cosx) / pow(distLen,2);	
+		}
+
 		++counter;
 	}
 
-	accLight = accLight * (w / counter);
+	accLight = accLight * (w / float(counter));
 	return accLight;
 }

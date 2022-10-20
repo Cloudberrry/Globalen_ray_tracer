@@ -1,13 +1,12 @@
 #pragma once
-#include "Triangle.h"
-#include "Rectangle.h"
+#include "Surface.h"
 
 class Ray {
 public:
 
 	Ray() = default;
 
-	Ray(Vertex startPos, Direction dir, Polygon* P = nullptr, Ray* prevRay = nullptr);
+	Ray(Vertex startPos, Direction dir, Surface* P = nullptr, Ray* prevRay = nullptr);
 
 	~Ray();
 
@@ -25,14 +24,13 @@ public:
 
 	Color getColor();
 
-	Polygon* getSurface();
-
+	Surface* getSurface();
 
 private:
 	Vertex start;
 	Vertex end;
 	Direction direction;
-	Polygon* surface; // Surface on which the starting vertex is located
+	Surface* surface; // Surface on which the starting vertex is located
 	Color color;
 	Ray* next;
 	Ray* previous;

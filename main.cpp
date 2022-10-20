@@ -10,7 +10,7 @@ int main() {
 	Camera myCamera{ 800, 800 };
 
 	std::cout << "Camera setup complete! Calculating pixel colors..." << std::endl;
-	myCamera.setPixels(myScene.allPolygons);
+	myCamera.setPixels(myScene);
 
 	std::cout << "Rendering pixels to the image..." << std::endl;
 	myCamera.render();

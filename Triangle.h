@@ -1,7 +1,7 @@
 #pragma once
-#include "Polygon.h"
+#include "Surface.h"
 
-class Triangle : public Polygon {
+class Triangle : public Surface {
 public:
 	Triangle(const Vertex p1, const Vertex p2, const Vertex p3, Material m);
 
@@ -9,6 +9,5 @@ public:
 
 	bool intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection) override;
 
-	Direction calculateNormal() override;
 private:
 };
