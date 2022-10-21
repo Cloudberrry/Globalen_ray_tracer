@@ -7,7 +7,7 @@ class Surface {
 public:
 	virtual ~Surface() = default;
 
-	Surface(const Surface& C) = delete;
+	Surface(const Surface& C) = default;
 
 	virtual bool intersection(const Direction inDirection, const Vertex start, Vertex& intPoint) = 0;
 

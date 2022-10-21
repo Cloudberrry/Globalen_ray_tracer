@@ -34,47 +34,48 @@ public:
 	void addPolygon(Surface* P) { polygons.push_back(P); }
 	
 	// Some colors
-	Color red{ 1.0f, 0.0f, 0.0f };
-	Color green{ 0.0f, 1.0f, 0.0f };
-	Color blue{ 0.0f, 0.0f, 1.0f };
-	Color gray{ 0.2f, 0.2f, 0.2f };
-	Color white{ 1.0f, 1.0f, 1.0f };
-	Color yellow{ 1.0f, 1.0f, 0.0f };
-	Color magenta{ 1.0f, 0.0f, 1.0f };
-	Color cyan{ 0.0f, 1.0f, 1.0f };
-	Color custom{ 0.75f, 1.0f, 0.6f };
+	Color red{ 1.0, 0.0, 0.0 };
+	Color green{ 0.0, 1.0, 0.0 };
+	Color blue{ 0.0, 0.0, 1.0 };
+	Color gray{ 0.2, 0.2, 0.2 };
+	Color white{ 1.0, 1.0, 1.0 };
+	Color yellow{ 1.0, 1.0, 0.0 };
+	Color magenta{ 1.0, 0.0, 1.0 };
+	Color cyan{ 0.0, 1.0, 1.0 };
+	Color custom{ 0.75, 1.0, 0.6 };
 
 
-	Material mirror{ "Mirror", white, 1.0f, 1.0f };
-	Material glass{ "Glass", white, 1.0f, 1.5f };
-	Material lamp{ "Lamp", white, 1.0f, 1.0f };
+	Material mirror{ "Mirror", white, 1.0, 1.0 };
+	Material glass{ "Glass", white, 1.0, 1.5 };
+	Material lamp{ "Lamp", white, 1.0, 1.0 };
 	std::vector<Surface*> polygons;
 	std::vector<Surface*> spheres;
+	std::vector<Surface*> lights;
 
 private:
 	
 
 	// Floor
-	Triangle floorTrig1{ {-3, 0, -5.0f}, {0, -6, -5.0f},  {0, 6, -5.0f}, {"Lambertian", white} };
-	Triangle floorTrig2{ {10, 6, -5.0f}, {10, -6, -5.0f}, {13, 0, -5.0f},  {"Lambertian", white} };
-	Rectangle floorRectangle{ {0, -6, -5.0f}, {10, -6, -5.0f}, {10, 6, -5.0f}, {0, 6, -5.0f}, {"Lambertian", white} };
+	Triangle floorTrig1{ {-3, 0, -5.0}, {0, -6, -5.0},  {0, 6, -5.0}, {"Lambertian", white} };
+	Triangle floorTrig2{ {10, 6, -5.0}, {10, -6, -5.0}, {13, 0, -5.0},  {"Lambertian", white} };
+	Rectangle floorRectangle{ {0, -6, -5.0}, {10, -6, -5.0}, {10, 6, -5.0}, {0, 6, -5.0}, {"Lambertian", white} };
 
 	// Ceiling
-	Triangle ceilTrig1{ {0, -6, 5.0f}, {-3, 0, 5.0f}, {0, 6, 5.0f}, {"Lambertian", white} };
-	Triangle ceilTrig2{ {13, 0, 5.0f}, {10, -6, 5.0f}, {10, 6, 5.0f}, {"Lambertian", white} };
-	Rectangle ceilRectangle{ {0, -6, 5.0f},  {0, 6, 5.0f}, {10, 6, 5.0f}, {10, -6, 5.0f}, {"Lambertian", white} };
+	Triangle ceilTrig1{ {0, -6, 5.0}, {-3, 0, 5.0}, {0, 6, 5.0}, {"Lambertian", white} };
+	Triangle ceilTrig2{ {13, 0, 5.0}, {10, -6, 5.0}, {10, 6, 5.0}, {"Lambertian", white} };
+	Rectangle ceilRectangle{ {0, -6, 5.0},  {0, 6, 5.0}, {10, 6, 5.0}, {10, -6, 5.0}, {"Lambertian", white} };
 
 	// Walls
 	Rectangle wall1{ {10, -6, -5}, {0, -6, -5}, {0, -6, 5}, {10, -6, 5}, {"Lambertian", red} };
-	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, mirror};
+	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, {"Lambertian", green} };
 	Rectangle wall3{ {10, 6, -5}, {13, 0, -5}, {13, 0, 5}, {10, 6, 5}, {"Lambertian", blue} };
 	Rectangle wall4{ {0, 6, -5}, {10, 6, -5}, {10, 6, 5}, {0, 6, 5}, {"Lambertian", yellow} };
 	Rectangle wall5{ {-3, 0, -5}, {0, 6, -5}, {0, 6, 5}, {-3, 0, 5}, {"Lambertian", magenta} };
 	Rectangle wall6{ {0, -6, -5}, {-3, 0, -5}, {-3, 0, 5}, {0, -6, 5}, {"Lambertian", cyan} };
 
 	// Add lamp
-	Rectangle ceilLamp{ {6.0f, -1.0f, 5.0f},  {6.0f, 1.0f, 5.0f}, {8.0f, 1.0f, 5.0f}, {8.0f, -1.0f, 5.0f}, lamp };
+	Rectangle ceilLamp{ {6.0, -2.0, 5.0},  {6.0, 2.0, 5.0}, {8.0, 2.0, 5.0}, {8.0, -2.0, 5.0}, lamp };
 
 	// Spheres
-	Sphere sphere1{ {8.0f, -1.0f, -3.0f}, 2.0f, {"Lambertian", red} };
+	Sphere sphere1{ {9.0, 0.0, -3.0}, 2.0, {"Lambertian", custom} };
 };

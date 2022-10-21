@@ -7,16 +7,18 @@
 
 class Material {
 public:
-	Material(std::string surfaceType, Color surfaceColor, float reflection = 1.0f, float refraction = 1.0f);
+	Material(std::string surfaceType, Color surfaceColor, double reflection = 0.5f, double refraction = 1.0f);
 
 	std::string getType();
 	Color getColor();
-	float getBRDF();
-	float getRefractionIndex();
+	double getBRDF();
+	double getRho();
+	double getRefractionIndex();
 
 private:
 	std::string type;
 	Color color;
-	float BRDF;
-	float refractionIndex;
+	double BRDF;
+	double rho;
+	double refractionIndex;
 };

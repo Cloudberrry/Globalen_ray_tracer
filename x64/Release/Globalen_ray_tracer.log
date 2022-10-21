@@ -1,13 +1,7 @@
 ﻿  Camera.cpp
-F:\TNCG15\Globalen_ray_tracer\Camera.cpp(146,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  Material.cpp
-  Ray.cpp
-  Rectangle.cpp
-  Sphere.cpp
-  Triangle.cpp
   main.cpp
   Generating code
-  1 of 415 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+  1 of 407 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code

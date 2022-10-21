@@ -1,6 +1,6 @@
 #include "Sphere.h"
 
-Sphere::Sphere(const Vertex center, const float r, Material m) : radius{ r }, Surface{ std::vector<Vertex>{ center }, m} {
+Sphere::Sphere(const Vertex center, const double r, Material m) : radius{ r }, Surface{ std::vector<Vertex>{ center }, m} {
 	
 }
 
@@ -8,26 +8,26 @@ bool Sphere::intersection(const Direction inDirection, const Vertex start, Verte
 	
 	Direction directionVector = (start - points[0]);
 
-	float c1 = glm::dot(inDirection, inDirection);
-	float c2 = 2.0f*glm::dot(inDirection, directionVector);
-	float c3 = glm::dot(directionVector, directionVector) - powf(radius, 2.0f);
+	double c1 = glm::dot(inDirection, inDirection);
+	double c2 = 2.0*glm::dot(inDirection, directionVector);
+	double c3 = glm::dot(directionVector, directionVector) - pow(radius, 2);
 
-	float arg = powf(c2, 2.0f) - 4.0f * c1 * c3;
-	float epsilon = 0.00001f;
+	double arg = pow(c2, 2) - 4 * c1 * c3;
+	double epsilon = 0.000001;
 
 	if(abs(arg) < epsilon) {
 		return false;
 	}
 	else if(arg > 0) {
-		float t1 = -(c2 + sqrt(arg)) / (2.0f * c1);
-		float t2 = -(c2 - sqrt(arg)) / (2.0f * c1);
+		double t1 = -(c2 + sqrt(arg)) / (2 * c1);
+		double t2 = -(c2 - sqrt(arg)) / (2 * c1);
 
-		float t = glm::min(t1, t2);
+		double t = glm::min(t1, t2);
 
-		Direction xr = start + inDirection * t;
-		refIntersection = xr;
+		Vertex xr = start + inDirection * t;
+		normal = glm::normalize(-(points[0] - xr));
 
-		normal = glm::normalize((xr - points[0]));
+		refIntersection = xr + normal * epsilon;
 
 		return true;
 	}

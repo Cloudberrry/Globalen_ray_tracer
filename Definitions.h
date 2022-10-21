@@ -2,6 +2,6 @@
 
 #include "glm/glm.hpp"
 
-using Vertex = glm::vec3;
-using Direction = glm::vec3;
-using Color = glm::vec3;
+using Vertex = glm::dvec3;
+using Direction = glm::dvec3;
+using Color = glm::dvec3;

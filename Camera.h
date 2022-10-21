@@ -14,12 +14,12 @@ public:
 	void render();
 
 	Color shootRay(Ray& ray, const Scene& S);
-	Color shootShadowRays(const Scene& S, Surface* hitSurface, Vertex hitPoint, Direction n_x);
+	Color shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex& hitPoint, const Direction& n_x);
 
 private:
 	int height;
 	int width;
 	std::vector<std::vector<Color>> pixelImage;
-	float iMax;
-	float pixelWidth;
+	double iMax;
+	double pixelWidth;
 };
