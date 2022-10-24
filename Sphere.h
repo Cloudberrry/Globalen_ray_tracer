@@ -3,7 +3,7 @@
 
 class Sphere : public Surface {
 public:
-	Sphere(const Vertex center, const double r, Material m);
+	Sphere(const double r, const Vertex center, Material m);
 
 	~Sphere() = default;
 

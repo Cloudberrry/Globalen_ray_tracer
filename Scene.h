@@ -1,5 +1,5 @@
 #pragma once
-#include "Triangle.h"
+#include "Tetrahedron.h"
 #include "Rectangle.h"
 #include "Sphere.h"
 
@@ -28,7 +28,9 @@ public:
 		polygons.push_back(&wall5);
 		polygons.push_back(&wall6);
 
-		spheres.push_back(&sphere1);
+		/*objects.push_back(&sphere1);
+		objects.push_back(&sphere2);*/
+		objects.push_back(&tetrahedron1);
 	}
 
 	void addPolygon(Surface* P) { polygons.push_back(P); }
@@ -48,8 +50,9 @@ public:
 	Material mirror{ "Mirror", white, 1.0, 1.0 };
 	Material glass{ "Glass", white, 1.0, 1.5 };
 	Material lamp{ "Lamp", white, 1.0, 1.0 };
+
 	std::vector<Surface*> polygons;
-	std::vector<Surface*> spheres;
+	std::vector<Surface*> objects;
 	std::vector<Surface*> lights;
 
 private:
@@ -67,15 +70,19 @@ private:
 
 	// Walls
 	Rectangle wall1{ {10, -6, -5}, {0, -6, -5}, {0, -6, 5}, {10, -6, 5}, {"Lambertian", red} };
-	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, {"Lambertian", green} };
+	Rectangle wall2{ {13, 0, -5}, {10, -6, -5}, {10, -6, 5}, {13, 0, 5}, mirror };
 	Rectangle wall3{ {10, 6, -5}, {13, 0, -5}, {13, 0, 5}, {10, 6, 5}, {"Lambertian", blue} };
 	Rectangle wall4{ {0, 6, -5}, {10, 6, -5}, {10, 6, 5}, {0, 6, 5}, {"Lambertian", yellow} };
 	Rectangle wall5{ {-3, 0, -5}, {0, 6, -5}, {0, 6, 5}, {-3, 0, 5}, {"Lambertian", magenta} };
 	Rectangle wall6{ {0, -6, -5}, {-3, 0, -5}, {-3, 0, 5}, {0, -6, 5}, {"Lambertian", cyan} };
 
 	// Add lamp
-	Rectangle ceilLamp{ {6.0, -2.0, 5.0},  {6.0, 2.0, 5.0}, {8.0, 2.0, 5.0}, {8.0, -2.0, 5.0}, lamp };
+	Rectangle ceilLamp{ {2.0, -2.0, 5.0},  {2.0, 2.0, 5.0}, {4.0, 2.0, 5.0}, {4.0, -2.0, 5.0}, lamp };
 
 	// Spheres
-	Sphere sphere1{ {9.0, 0.0, -3.0}, 2.0, {"Lambertian", custom} };
+	Sphere sphere1{ 2.0, {7.0, 2.0, -2.0}, mirror };
+	Sphere sphere2{ 1.0, {9.0, -3.0, 0.0}, {"Lambertian", custom} };
+
+	// Tetrahedrons
+	Tetrahedron tetrahedron1{ {6.0, -2.0, -1.0}, {4.0, 0.0, -1.0}, {6.0, 2.0, -1.0}, {5.0, 0.0, 1.0}, {"Lambertian", magenta} };
 };

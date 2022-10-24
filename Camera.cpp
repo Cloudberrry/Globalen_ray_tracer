@@ -1,20 +1,21 @@
 #include "Camera.h"
 #include <stdlib.h>
 
-Camera::Camera(int pixHeight, int pixWidth) : height{ pixHeight }, width{ pixWidth }, iMax{ 0.0 } {
+Camera::Camera(int pixHeight, int pixWidth, int raysPerPixel, int shadowRaysPerIntersection)
+	: height{ pixHeight }, width{ pixWidth }, numberOfRays{ raysPerPixel }, numberOfShadowRays{ shadowRaysPerIntersection }, iMax{ 0.0 }, pixelWidth{ 2.0 / pixHeight }
+{
 	pixelImage.resize(height, std::vector<Color> (width));
-	pixelWidth = 2.0 / height;
-	std::cout << "Pixel width: " << pixelWidth << std::endl;
 }
 
 
 void Camera::setPixels(const Scene& S) {
 
-	int samples = 5;
+	
 	double newiMax;
 	Vertex pixelPos;
 	Vertex eyePosition = {-1.0, 0.0, 0.0};
 	Direction currentDirection;
+	int rayDepth = -1;
 	
 
 	for (int i = 0; i < height; ++i) {
@@ -25,11 +26,12 @@ void Camera::setPixels(const Scene& S) {
 			Ray firstRay{ pixelPos, currentDirection };
 			
 			Color average_color = { 0.0, 0.0, 0.0 };
-			for (int a = 0; a < samples; ++a) {
-				average_color += shootRay(firstRay, S);
+			for (int a = 0; a < numberOfRays; ++a) {
+				average_color += shootRay(firstRay, S, rayDepth);
+				rayDepth = -1;
 			}
 
-			average_color = { average_color.x * 255.0 / samples, average_color.y * 255.0 / samples, average_color.z * 255.0 / samples };
+			average_color = { average_color.x * 255.0 / numberOfRays, average_color.y * 255.0 / numberOfRays, average_color.z * 255.0 / numberOfRays };
 			//average_color = { sqrt(average_color.x * 255.0 / samples), sqrt(average_color.y * 255.0 / samples), sqrt(average_color.z * 255.0 / samples) };
 		
 			pixelImage[i][j] = average_color;
@@ -63,7 +65,7 @@ void Camera::render() {
 	std::cout << "Finished" << std::endl;
 }
 
-Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>& P) {
+Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::vector<Polygon*>& P) {
 
 	Vertex intersectionPoint;		// To calculate distance
 	Vertex best_intersectionPoint;	// For final intersection
@@ -73,14 +75,13 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 	std::string type;
 	double smallestDist = 10000000.0;
 
-	for (int k = 0; k < S.polygons.size(); ++k) {
+	for (int i = 0; i < S.objects.size(); ++i) {
+		if (S.objects[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
 
-		if (S.polygons[k]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
-			
 			double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
-			
+
 			if (newDist < smallestDist) {
-				hitFace = S.polygons[k];
+				hitFace = S.objects[i];
 				smallestDist = newDist;
 				best_intersectionPoint = intersectionPoint;
 				currentNormal = hitFace->getNormal();
@@ -88,21 +89,25 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 		}
 	}
 
-	for (int i = 0; i < S.spheres.size(); ++i) {
-		if (S.spheres[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
+	if (hitFace == nullptr) {
+		// Go through all polygons in the scene
+		for (int i = 0; i < S.polygons.size(); ++i) {
 
-			double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
+			if (S.polygons[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
 
-			if (newDist < smallestDist) {
-				hitFace = S.spheres[i];
-				smallestDist = newDist;
-				best_intersectionPoint = intersectionPoint;
-				currentNormal = hitFace->getNormal();
+				double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
+
+				if (newDist < smallestDist) {
+					hitFace = S.polygons[i];
+					smallestDist = newDist;
+					best_intersectionPoint = intersectionPoint;
+					currentNormal = hitFace->getNormal();
+				}
 			}
 		}
 	}
-
-	// Ska egentligen inte hända, men det händer, varför träffar vi inte en yta....
+	
+	// Should never happen, but it does :))))))))))
 	if (hitFace == nullptr) {
 		ray.setRayColor(S.custom);
 		return ray.getColor();
@@ -115,14 +120,20 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 
 		ray.setRayColor(S.white);
 
-	} else if (type == "Mirror") {
+	} else if (type == "Mirror")  {
+
+		if (rayDepth > 10) {
+			return hitFace->getMaterial().getColor();
+		}
+
+		++rayDepth;
 
 		// Mirrors currently let's the ray bounce forever if we have to mirrors with opposite normals, needs to be fixed
 
 		Ray newRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
 		ray.setNextRay(&newRay);
 
-		incomingRayColor = shootRay(newRay, S); // Shoot the newly created ray into the scene
+		incomingRayColor = shootRay(newRay, S, rayDepth); // Shoot the newly created ray into the scene
 
 		ray.setRayColor(incomingRayColor * hitFace->getMaterial().getColor()); // Could multiply with surface color to get a tinted mirror
 
@@ -140,7 +151,10 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 		double inclinationAngle = acos(sqrt(1.0 - y));
 		double azimut = 2.0 * M_PI * y / hitFace->getMaterial().getRho();
 
-		if (azimut <= 2.0 * M_PI) {
+		if (azimut <= 2.0 * M_PI && rayDepth < 10) {
+
+			++rayDepth;
+
 			// Calculate where the new direction would intersect the hemisphere
 			Vertex xO = { cos(azimut) * sin(inclinationAngle), sin(azimut) * sin(inclinationAngle), cos(inclinationAngle) };
 
@@ -164,13 +178,13 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 			ray.setNextRay(&newRay);
 
 			// Shoot a new ray into the scene
-			incomingRayColor = shootRay(newRay, S);
+			incomingRayColor = shootRay(newRay, S, rayDepth);
 
 			// Set ray color depending on the incoming ray color and the direct light
 			//ray.setRayColor( hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor);
-			ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor + hitFace->getMaterial().getColor() * shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
+			ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor + shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
 		} else {
-			ray.setRayColor(hitFace->getMaterial().getColor() * shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
+			ray.setRayColor(shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
 		}
 	}
 
@@ -178,7 +192,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S) {	//const std::vector<Polygon*>
 }
 
 
-Color Camera::shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex& hitPoint, const Direction& n_x) {
+Color Camera::shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex hitPoint, const Direction& n_x) {
 	
 	std::random_device rand_dev;
 	std::mt19937 generator{ rand_dev() };
@@ -196,42 +210,45 @@ Color Camera::shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex&
 	Vertex w = lightArea * Le * 25.0;
 
 	int counter = 0;
-	int numberOfShadowRays = 10;
-
-	if (glm::dot(n_x, lamp->getNormal()) > 0) {
-		return { 0.0, 0.0, 0.0 };
-	}
-
+	
 	while (counter < numberOfShadowRays) {
 		V = 1.0;
+
 		double rand1 = distribution(generator);
 		double rand2 = distribution(generator);
 
 		Vertex lampCoordinate = lamp->getPoints()[0] + rand1 * e1 + rand2 * e2;
 
 		Direction distance = lampCoordinate - hitPoint;
+
 		double distLen = glm::length(distance);
 
-		for (int i = 0; i < S.spheres.size(); ++i) {
-			if (S.spheres[i]->intersection(glm::normalize(distance), hitPoint, intersectionPoint)) {
-				
+		if (glm::dot(n_x, distance) < 0) {
+			++counter;
+			continue;
+		}
+
+		for (int i = 0; i < S.objects.size(); ++i) {
+			if (S.objects[i]->intersection(glm::normalize(distance), hitPoint, intersectionPoint)) {
+
 				double newDist = glm::length(intersectionPoint - hitPoint);
 
 				if (newDist < distLen) {
 					V = 0.0; // The pixel is in shadow
 					break;
-				}
+				}	
 			}
 		}
 
 		double cosy = glm::dot(-lamp->getNormal(), distance) / distLen;
 		double cosx = glm::dot(n_x, distance) / distLen;
-		accLight = accLight + V * (cosy * cosx) / pow(distLen, 2.0);
 
+		accLight = accLight + V * (cosy * cosx) / pow(distLen, 2);
+		
 		++counter;
 	}
 
-	accLight = accLight * (w / (double)numberOfShadowRays) * hitSurface->getMaterial().getBRDF();
+	accLight = accLight * hitSurface->getMaterial().getBRDF() * hitSurface->getMaterial().getColor() * (w / (double)numberOfShadowRays);
 
 	return accLight;
 }

@@ -19,7 +19,7 @@ bool Rectangle::intersection(const Direction inDirection, const Vertex start, Ve
 		
 
 		if ((0.0 <= a && a <= 1.0 && 0.0 <= b && b <= 1.0) || (abs(a) < epsilon && 0.0 <= b && b <= 1.0) || (abs(b) < epsilon && 0.0 <= a && a <= 1.0))  {
-			refIntersection = x + normal * epsilon;
+			refIntersection = x;
 			return true;
 		}
 	}

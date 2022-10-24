@@ -7,7 +7,7 @@
 
 class Material {
 public:
-	Material(std::string surfaceType, Color surfaceColor, double reflection = 0.5f, double refraction = 1.0f);
+	Material(std::string surfaceType, Color surfaceColor, double reflection = 0.5, double refraction = 1.0);
 
 	std::string getType();
 	Color getColor();
