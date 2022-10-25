@@ -15,6 +15,9 @@ public:
 	double getRho();
 	double getRefractionIndex();
 
+	bool operator==(const Material& M);
+	bool operator!=(const Material& M);
+
 private:
 	std::string type;
 	Color color;

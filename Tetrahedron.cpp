@@ -11,12 +11,15 @@ Tetrahedron::Tetrahedron(const Vertex p1, const Vertex p2, const Vertex p3, cons
 	triangles.push_back(t2);
 	triangles.push_back(t3);
 	triangles.push_back(t4);
-	std::cout << "( " << triangles[0].getNormal().x << ", " << triangles[0].getNormal().y << ", " << triangles[0].getNormal().z << " )" << std::endl;
+	
 }
 
 bool Tetrahedron::intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection) {
+	//std::cout << "( " << triangles[1].getMaterial().getColor().x << ", " << triangles[1].getMaterial().getColor().y << ", " << triangles[1].getMaterial().getColor().z << " )" << std::endl;
+
 	for (int i = 0; i < triangles.size(); ++i) {
 		if (triangles[i].intersection(inDirection, start, refIntersection)) {
+			normal = triangles[i].getNormal();
 			return true;
 		}
 	}

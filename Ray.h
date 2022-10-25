@@ -21,6 +21,7 @@ public:
 	Direction getDirection();
 
 	Direction calculateNewDirection(Direction inDirection, Direction normal);
+	Direction calculateRefractedRay(Direction inDirection, Direction normal, double R);
 
 	Color getColor();
 

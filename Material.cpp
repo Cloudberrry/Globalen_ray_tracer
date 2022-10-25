@@ -25,3 +25,14 @@ double Material::getRho() {
 double Material::getRefractionIndex() {
 	return refractionIndex;
 }
+
+bool Material::operator==(const Material& M) {
+	if (type == M.type && color == M.color && BRDF == M.BRDF && rho == M.rho && refractionIndex == M.refractionIndex) {
+		return true;
+	}
+	return false;
+}
+
+bool Material::operator!=(const Material& M) {
+	return !operator==(M);
+}

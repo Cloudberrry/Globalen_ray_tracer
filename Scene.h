@@ -28,8 +28,8 @@ public:
 		polygons.push_back(&wall5);
 		polygons.push_back(&wall6);
 
-		/*objects.push_back(&sphere1);
-		objects.push_back(&sphere2);*/
+		objects.push_back(&sphere1);
+		objects.push_back(&sphere2);
 		objects.push_back(&tetrahedron1);
 	}
 
@@ -81,8 +81,8 @@ private:
 
 	// Spheres
 	Sphere sphere1{ 2.0, {7.0, 2.0, -2.0}, mirror };
-	Sphere sphere2{ 1.0, {9.0, -3.0, 0.0}, {"Lambertian", custom} };
+	Sphere sphere2{ 1.0, {6.0, -3.0, 0.0}, {"Lambertian", custom} };
 
 	// Tetrahedrons
-	Tetrahedron tetrahedron1{ {6.0, -2.0, -1.0}, {4.0, 0.0, -1.0}, {6.0, 2.0, -1.0}, {5.0, 0.0, 1.0}, {"Lambertian", magenta} };
+	Tetrahedron tetrahedron1{ {5.0, -3.0, -4.0}, {3.0, -1.0, -4.0}, {5.0, 1.0, -4.0}, {4.0, -1.0, -2.0}, {"Lambertian", magenta, 0.5} };
 };

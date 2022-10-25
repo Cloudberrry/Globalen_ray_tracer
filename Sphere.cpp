@@ -16,7 +16,7 @@ bool Sphere::intersection(const Direction inDirection, const Vertex start, Verte
 	double arg = pow(c2, 2) - 4.0 * c1 * c3;
 	double epsilon = 0.0001;
 
-	if(abs(arg) < epsilon || 0 < c2) { 
+	if(abs(arg) < epsilon || c2 > 0.0) { 
 		return false;
 	}
 	else if(arg > 0) {

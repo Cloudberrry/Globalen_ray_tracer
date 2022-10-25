@@ -24,6 +24,7 @@ protected:
 	{
 
 	}
+	
 
 	Material material;
 	Direction normal;

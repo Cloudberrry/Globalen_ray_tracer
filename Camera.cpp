@@ -128,14 +128,46 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 
 		++rayDepth;
 
-		// Mirrors currently let's the ray bounce forever if we have to mirrors with opposite normals, needs to be fixed
-
 		Ray newRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
 		ray.setNextRay(&newRay);
 
 		incomingRayColor = shootRay(newRay, S, rayDepth); // Shoot the newly created ray into the scene
 
 		ray.setRayColor(incomingRayColor * hitFace->getMaterial().getColor()); // Could multiply with surface color to get a tinted mirror
+
+	} else if (type == "Glass") {
+
+		if (rayDepth > 10) {
+			return hitFace->getMaterial().getColor();
+		}
+
+		++rayDepth;
+
+		double n1;
+		double n2;
+
+		if (glm::dot(ray.getDirection(), currentNormal) > 0) {
+			n1 = hitFace->getMaterial().getRefractionIndex();
+			n2 = 1.0;
+		} else {
+			n1 = 1.0;
+			n2 = hitFace->getMaterial().getRefractionIndex();
+		}
+
+
+		/*if (n1 * sin(OMEGA / n2)) {
+
+		}*/
+		
+
+		Ray reflectedRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
+		Ray refractedRay{ best_intersectionPoint, ray.calculateRefractedRay(ray.getDirection(), currentNormal, (n1/n2)), hitFace, &ray };
+
+		incomingRayColor = shootRay(reflectedRay, S, rayDepth); // Shoot the newly created ray into the scene
+		incomingRayColor = shootRay(refractedRay, S, rayDepth); // Shoot the newly created ray into the scene
+
+		ray.setRayColor(incomingRayColor * hitFace->getMaterial().getColor()); // Could multiply with surface color to get a tinted mirror
+
 
 	} else if (type == "Lambertian") {
 
@@ -185,6 +217,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 			ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor + shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
 		} else {
 			ray.setRayColor(shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
+			//ray.setRayColor(hitFace->getMaterial().getColor());
 		}
 	}
 
@@ -229,7 +262,7 @@ Color Camera::shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex 
 		}
 
 		for (int i = 0; i < S.objects.size(); ++i) {
-			if (S.objects[i]->intersection(glm::normalize(distance), hitPoint, intersectionPoint)) {
+			if (hitSurface != S.objects[i] && S.objects[i]->intersection(glm::normalize(distance), hitPoint, intersectionPoint)) {
 
 				double newDist = glm::length(intersectionPoint - hitPoint);
 
