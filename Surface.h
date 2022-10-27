@@ -11,15 +11,15 @@ public:
 
 	virtual bool intersection(const Direction inDirection, const Vertex start, Vertex& intPoint) = 0;
 
-	std::vector<Vertex> getPoints() { return points; }
+	std::vector<Vertex> getPoints() const { return points; }
 
-	Material getMaterial() { return material; }
+	Material getMaterial() const { return material; }
 
-	Direction getNormal() { return normal; }
+	Direction getNormal() const { return normal; }
 
 protected:
 
-	Surface(const std::vector<Vertex> P, const Material m)
+	Surface(const std::vector<Vertex>& P, const Material m)
 		: points{ P }, material { m }
 	{
 

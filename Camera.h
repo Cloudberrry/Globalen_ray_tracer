@@ -11,10 +11,10 @@ public:
 
 	void setPixels(const Scene& S);
 
-	void render();
+	void render() const;
 
-	Color shootRay(Ray& ray, const Scene& S, int& rayDepth);
-	Color shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex hitPoint, const Direction& n_x);
+	Color shootRay(Ray& ray, const Scene& S, int& rayDepth) const;
+	Color shootShadowRays(const Scene& S, Surface* lamp, Surface*& hitSurface, const Vertex& hitPoint, const Direction& n_x) const;
 
 private:
 	int height;

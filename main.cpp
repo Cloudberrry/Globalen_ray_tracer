@@ -5,7 +5,7 @@ int main() {
 	
 
 	int raysPerPixel = 5;
-	int numberOfShadowRays = 10;
+	int numberOfShadowRays = 5;
 
 
 	std::cout << "Creating scene..." << std::endl;

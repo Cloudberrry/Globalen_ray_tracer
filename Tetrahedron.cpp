@@ -15,10 +15,9 @@ Tetrahedron::Tetrahedron(const Vertex p1, const Vertex p2, const Vertex p3, cons
 }
 
 bool Tetrahedron::intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection) {
-	//std::cout << "( " << triangles[1].getMaterial().getColor().x << ", " << triangles[1].getMaterial().getColor().y << ", " << triangles[1].getMaterial().getColor().z << " )" << std::endl;
 
 	for (int i = 0; i < triangles.size(); ++i) {
-		if (triangles[i].intersection(inDirection, start, refIntersection)) {
+		if (glm::dot(triangles[i].getNormal(), inDirection) < 0 && triangles[i].intersection(inDirection, start, refIntersection)) {
 			normal = triangles[i].getNormal();
 			return true;
 		}

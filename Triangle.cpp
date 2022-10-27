@@ -21,7 +21,7 @@ bool Triangle::intersection(const Direction inDirection, const Vertex start, Ver
 		double u = result.y;
 		double v = result.z;
 
-		double epsilon = 0.000001;
+		double epsilon = 0.01;
 		
 		if ((0.0 <= u && 0.0 <= v && (u + v) <= 1.0) || (abs(u) < epsilon && 0.0 <= v && v <= 1.0 ) || (abs(v) < epsilon && 0.0 <= u && u <= 1.0)) {
 			refIntersection = start + t * D;

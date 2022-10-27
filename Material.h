@@ -9,19 +9,15 @@ class Material {
 public:
 	Material(std::string surfaceType, Color surfaceColor, double reflection = 0.5, double refraction = 1.0);
 
-	std::string getType();
-	Color getColor();
-	double getBRDF();
-	double getRho();
-	double getRefractionIndex();
-
-	bool operator==(const Material& M);
-	bool operator!=(const Material& M);
+	std::string getType() const;
+	Color getColor() const;
+	double getBRDF() const;
+	double getRho() const;
+	double getRefractionIndex() const;
 
 private:
 	std::string type;
 	Color color;
-	double BRDF;
-	double rho;
+	double reflectiveIndex;
 	double refractionIndex;
 };

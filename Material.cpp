@@ -1,38 +1,30 @@
 #include "Material.h"
 
 Material::Material(std::string surfaceType, Color surfaceColor, double reflection, double refraction)
-	: type{ surfaceType }, color{ surfaceColor }, BRDF{ (reflection / M_PI) }, rho{ reflection }, refractionIndex{ refraction }
+	: type{ surfaceType }, color{ surfaceColor }, reflectiveIndex{ reflection }, refractionIndex{ refraction }
 {
 
 }
 
-std::string Material::getType() {
+std::string Material::getType() const {
 	return type;
 }
 
-Color Material::getColor() {
+Color Material::getColor() const {
 	return color;
 }
 
-double Material::getBRDF() {
-	return BRDF;
-}
-
-double Material::getRho() {
-	return rho;
-}
-
-double Material::getRefractionIndex() {
-	return refractionIndex;
-}
-
-bool Material::operator==(const Material& M) {
-	if (type == M.type && color == M.color && BRDF == M.BRDF && rho == M.rho && refractionIndex == M.refractionIndex) {
-		return true;
+double Material::getBRDF() const {
+	if (type == "Lambertian") {
+		return reflectiveIndex / M_PI;
 	}
-	return false;
+	return reflectiveIndex;
 }
 
-bool Material::operator!=(const Material& M) {
-	return !operator==(M);
+double Material::getRho() const {
+	return reflectiveIndex;
+}
+
+double Material::getRefractionIndex() const {
+	return refractionIndex;
 }

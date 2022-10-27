@@ -31,8 +31,8 @@ void Camera::setPixels(const Scene& S) {
 				rayDepth = -1;
 			}
 
-			average_color = { average_color.x * 255.0 / numberOfRays, average_color.y * 255.0 / numberOfRays, average_color.z * 255.0 / numberOfRays };
-			//average_color = { sqrt(average_color.x * 255.0 / samples), sqrt(average_color.y * 255.0 / samples), sqrt(average_color.z * 255.0 / samples) };
+			//average_color = { average_color.x * 255.0 / numberOfRays, average_color.y * 255.0 / numberOfRays, average_color.z * 255.0 / numberOfRays };
+			average_color = { sqrt(average_color.x * 255.0 / numberOfRays), sqrt(average_color.y * 255.0 / numberOfRays), sqrt(average_color.z * 255.0 / numberOfRays) };
 		
 			pixelImage[i][j] = average_color;
 
@@ -45,7 +45,7 @@ void Camera::setPixels(const Scene& S) {
 	}
 }
 
-void Camera::render() {
+void Camera::render() const{
 
 	std::ofstream ofs("./scene.ppm", std::ios::out | std::ios::binary);
 	ofs << "P6\n" << height << " " << width << "\n255\n";
@@ -65,15 +65,19 @@ void Camera::render() {
 	std::cout << "Finished" << std::endl;
 }
 
-Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::vector<Polygon*>& P) {
+Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 	Vertex intersectionPoint;		// To calculate distance
 	Vertex best_intersectionPoint;	// For final intersection
 	Direction currentNormal;
 	Color incomingRayColor;
+	Color incomingRefractedRayColor;
+	Color surfaceColor;
 	Surface* hitFace = nullptr;
 	std::string type;
 	double smallestDist = 10000000.0;
+	double BRDF;
+	
 
 	for (int i = 0; i < S.objects.size(); ++i) {
 		if (S.objects[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
@@ -90,6 +94,21 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 	}
 
 	if (hitFace == nullptr) {
+
+		for (int i = 0; i < S.lights.size(); ++i) {
+			if (S.lights[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
+
+				double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
+
+				if (newDist < smallestDist) {
+					hitFace = S.lights[i];
+					smallestDist = newDist;
+					best_intersectionPoint = intersectionPoint;
+					currentNormal = hitFace->getNormal();
+				}
+			}
+		}
+
 		// Go through all polygons in the scene
 		for (int i = 0; i < S.polygons.size(); ++i) {
 
@@ -106,6 +125,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 			}
 		}
 	}
+
 	
 	// Should never happen, but it does :))))))))))
 	if (hitFace == nullptr) {
@@ -115,6 +135,8 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 
 	ray.setEndPoint(best_intersectionPoint);
 	type = hitFace->getMaterial().getType();
+	surfaceColor = hitFace->getMaterial().getColor();
+	BRDF = hitFace->getMaterial().getBRDF();
 	
 	if (type == "Lamp") {
 
@@ -123,7 +145,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 	} else if (type == "Mirror")  {
 
 		if (rayDepth > 10) {
-			return hitFace->getMaterial().getColor();
+			return surfaceColor;
 		}
 
 		++rayDepth;
@@ -131,14 +153,15 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 		Ray newRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
 		ray.setNextRay(&newRay);
 
-		incomingRayColor = shootRay(newRay, S, rayDepth); // Shoot the newly created ray into the scene
+		// Shoot the newly created ray into the scene
+		incomingRayColor = shootRay(newRay, S, rayDepth); 
 
-		ray.setRayColor(incomingRayColor * hitFace->getMaterial().getColor()); // Could multiply with surface color to get a tinted mirror
+		ray.setRayColor(BRDF * surfaceColor * incomingRayColor);
 
 	} else if (type == "Glass") {
 
 		if (rayDepth > 10) {
-			return hitFace->getMaterial().getColor();
+			return surfaceColor;
 		}
 
 		++rayDepth;
@@ -164,9 +187,9 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 		Ray refractedRay{ best_intersectionPoint, ray.calculateRefractedRay(ray.getDirection(), currentNormal, (n1/n2)), hitFace, &ray };
 
 		incomingRayColor = shootRay(reflectedRay, S, rayDepth); // Shoot the newly created ray into the scene
-		incomingRayColor = shootRay(refractedRay, S, rayDepth); // Shoot the newly created ray into the scene
+		incomingRefractedRayColor = shootRay(refractedRay, S, rayDepth); // Shoot the newly created ray into the scene
 
-		ray.setRayColor(incomingRayColor * hitFace->getMaterial().getColor()); // Could multiply with surface color to get a tinted mirror
+		ray.setRayColor(BRDF * surfaceColor * incomingRayColor + BRDF * surfaceColor * incomingRefractedRayColor);
 
 
 	} else if (type == "Lambertian") {
@@ -212,11 +235,25 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 			// Shoot a new ray into the scene
 			incomingRayColor = shootRay(newRay, S, rayDepth);
 
+
+			Color totalDirectLight = { 0.0, 0.0, 0.0 };
+
+			for (int i = 0; i < S.lights.size(); ++i) {
+				totalDirectLight += shootShadowRays(S, S.lights[i], hitFace, best_intersectionPoint, currentNormal);
+			}
+
 			// Set ray color depending on the incoming ray color and the direct light
 			//ray.setRayColor( hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor);
-			ray.setRayColor(hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor + shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
+			ray.setRayColor(BRDF * surfaceColor * incomingRayColor + totalDirectLight);
 		} else {
-			ray.setRayColor(shootShadowRays(S, hitFace, best_intersectionPoint, currentNormal));
+
+			Color totalDirectLight = {0.0, 0.0, 0.0};
+
+			for (int i = 0; i < S.lights.size(); ++i) {
+				totalDirectLight += shootShadowRays(S, S.lights[i], hitFace, best_intersectionPoint, currentNormal);
+			}
+
+			ray.setRayColor(totalDirectLight);
 			//ray.setRayColor(hitFace->getMaterial().getColor());
 		}
 	}
@@ -225,13 +262,12 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) {	//const std::v
 }
 
 
-Color Camera::shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex hitPoint, const Direction& n_x) {
+Color Camera::shootShadowRays(const Scene& S, Surface* lamp, Surface*& hitSurface, const Vertex& hitPoint, const Direction& n_x) const {
 	
 	std::random_device rand_dev;
 	std::mt19937 generator{ rand_dev() };
 	std::uniform_real_distribution<double> distribution{ 0.0, 1.0 };
 
-	Surface* lamp = S.polygons[0];
 	Direction e1 = lamp->getPoints()[1] - lamp->getPoints()[0];
 	Direction e2 = lamp->getPoints()[3] - lamp->getPoints()[0];
 	Vertex intersectionPoint;
@@ -240,7 +276,7 @@ Color Camera::shootShadowRays(const Scene& S, Surface* hitSurface, const Vertex 
 	double lightArea = glm::length(e1) * glm::length(e2);
 	double V;
 	Vertex Le = {1.0, 1.0, 1.0};
-	Vertex w = lightArea * Le * 25.0;
+	Vertex w = lightArea * Le * 40.0;
 
 	int counter = 0;
 	

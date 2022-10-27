@@ -11,7 +11,7 @@ bool Rectangle::intersection(const Direction inDirection, const Vertex start, Ve
 
 		Direction c1 = points[1] - points[0];
 		Direction c2 = points[3] - points[0];
-		double epsilon = 0.000001;
+		double epsilon = 0.01;
 		Vertex x = start +  t * inDirection;
 
 		double a = glm::dot((x - points[0]), c1) / glm::dot(c1, c1);

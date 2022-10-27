@@ -16,16 +16,13 @@ public:
 
 	void setNextRay(Ray* R);
 
-	Vertex getStartingPoint();
+	Vertex getStartingPoint() const;
+	Direction getDirection() const;
+	Color getColor() const;
+	Surface* getSurface() const;
 
-	Direction getDirection();
-
-	Direction calculateNewDirection(Direction inDirection, Direction normal);
-	Direction calculateRefractedRay(Direction inDirection, Direction normal, double R);
-
-	Color getColor();
-
-	Surface* getSurface();
+	Direction calculateNewDirection(Direction inDirection, Direction normal) const;
+	Direction calculateRefractedRay(Direction inDirection, Direction normal, double R) const;
 
 private:
 	Vertex start;
