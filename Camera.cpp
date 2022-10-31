@@ -4,23 +4,26 @@
 Camera::Camera(int pixHeight, int pixWidth, int raysPerPixel, int shadowRaysPerIntersection)
 	: height{ pixHeight }, width{ pixWidth }, numberOfRays{ raysPerPixel }, numberOfShadowRays{ shadowRaysPerIntersection }, iMax{ 0.0 }, pixelWidth{ 2.0 / pixHeight }
 {
+	std::cout << "Setting up camera object..." << std::endl;
 	pixelImage.resize(height, std::vector<Color> (width));
 }
 
 
 void Camera::setPixels(const Scene& S) {
 
-	
-	double newiMax;
+	std::cout << "Calculating pixel colors..." << std::endl;
+
+	// Declaration of some constants and some variables
+	const Vertex eyePosition = { -1.0, 0.0, 0.0 };
 	Vertex pixelPos;
-	Vertex eyePosition = {-1.0, 0.0, 0.0};
 	Direction currentDirection;
-	int rayDepth = -1;
+	int rayDepth = 0;
 	
 
 	for (int i = 0; i < height; ++i) {
 		for (int j = 0; j < width; ++j) {
 
+			// Calculate the pixel position on the camera plane
 			pixelPos = { 0.0, j * pixelWidth - (1.0 - pixelWidth), i * pixelWidth - (1.0 - pixelWidth) };
 			currentDirection = glm::normalize(pixelPos - eyePosition);
 			Ray firstRay{ pixelPos, currentDirection };
@@ -28,7 +31,7 @@ void Camera::setPixels(const Scene& S) {
 			Color average_color = { 0.0, 0.0, 0.0 };
 			for (int a = 0; a < numberOfRays; ++a) {
 				average_color += shootRay(firstRay, S, rayDepth);
-				rayDepth = -1;
+				rayDepth = 0;
 			}
 
 			//average_color = { average_color.x * 255.0 / numberOfRays, average_color.y * 255.0 / numberOfRays, average_color.z * 255.0 / numberOfRays };
@@ -36,7 +39,7 @@ void Camera::setPixels(const Scene& S) {
 		
 			pixelImage[i][j] = average_color;
 
-			newiMax = glm::max(glm::max(pixelImage[i][j].x, pixelImage[i][j].y), pixelImage[i][j].z);
+			double newiMax = glm::max(glm::max(pixelImage[i][j].x, pixelImage[i][j].y), pixelImage[i][j].z);
 
 			if ( newiMax > iMax) {
 				iMax = newiMax;
@@ -47,10 +50,13 @@ void Camera::setPixels(const Scene& S) {
 
 void Camera::render() const{
 
+	std::cout << "Rendering pixels to the image..." << std::endl;
+
+	// ofstream operator to write the pixel colors to a ppm file
 	std::ofstream ofs("./scene.ppm", std::ios::out | std::ios::binary);
 	ofs << "P6\n" << height << " " << width << "\n255\n";
 
-	std::cout << "iMax: " << iMax << std::endl;
+	std::cout << "Maximum color value: " << iMax << std::endl;
 
 	// Portable pixel map(ppm) writes the coordinates starting from the top left corner and goes down to the bottom right
 	for (int i = height-1; i >= 0; --i) {
@@ -62,119 +68,156 @@ void Camera::render() const{
 	}
 	ofs.close();
 
-	std::cout << "Finished" << std::endl;
+	std::cout << "Render complete!" << std::endl;
+}
+
+void Camera::setNumberOfRaysPerPixel(const int rays) {
+	numberOfRays = rays;
+}
+
+void Camera::setNumberOfShadowRays(const int shadowRays) {
+	numberOfShadowRays = shadowRays;
+}
+
+void Camera::setMaximumRayDepth(const int depth) {
+	maxRayDepth = depth;
 }
 
 Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
-	Vertex intersectionPoint;		// To calculate distance
-	Vertex best_intersectionPoint;	// For final intersection
-	Direction currentNormal;
-	Color incomingRayColor;
-	Color incomingRefractedRayColor;
-	Color surfaceColor;
-	Surface* hitFace = nullptr;
-	std::string type;
-	double smallestDist = 10000000.0;
-	double BRDF;
+	Vertex intersectionPoint;			// The intersection point
+	Vertex closest_intersectionPoint;	// The intersection point with the smallest distance to the starting point of the ray
+	Direction currentNormal;			// The normal of the intersected surface at the intersection point
+	Color incomingRayColor;				// The indirect light coming from other surfaces
+	Color incomingRefractedRayColor;	// The indirect light coming from a refracted ray
+	Color surfaceColor;					// The color of the intersected surface
+	Surface* hitSurface = nullptr;		// A pointer to the intersected surface
+	std::string type;					// The type of the intersected surface
+	double smallestDist = 10000000.0;	// The current smallest distance to an intersection point
+	double BRDF;						// The value of the BRDF
 	
 
+
+	// Check if ray intersects any of the objects in the scene
 	for (int i = 0; i < S.objects.size(); ++i) {
 		if (S.objects[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
 
+			// The distance between the intersection point and the starting oint of the ray
 			double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
 
+			// Check if the intersected surface is closer than any other intersected surface
 			if (newDist < smallestDist) {
-				hitFace = S.objects[i];
+				hitSurface = S.objects[i];
 				smallestDist = newDist;
-				best_intersectionPoint = intersectionPoint;
-				currentNormal = hitFace->getNormal();
+				closest_intersectionPoint = intersectionPoint;
+				currentNormal = hitSurface->getNormal();
 			}
 		}
 	}
 
-	if (hitFace == nullptr) {
+	// If the ray did not intersect with any object in the scene, the ray must intersect either the wall, floor, ceiling, or a light source
+	if (hitSurface == nullptr) {
 
+		// Go through all the light sources in the scene
 		for (int i = 0; i < S.lights.size(); ++i) {
 			if (S.lights[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
 
+				// The distance between the intersection point and the starting oint of the ray
 				double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
 
+				// Check if the intersected surface is closer than any other intersected surface
 				if (newDist < smallestDist) {
-					hitFace = S.lights[i];
+					hitSurface = S.lights[i];
 					smallestDist = newDist;
-					best_intersectionPoint = intersectionPoint;
-					currentNormal = hitFace->getNormal();
+					closest_intersectionPoint = intersectionPoint;
+					currentNormal = hitSurface->getNormal();
 				}
 			}
 		}
 
 		// Go through all polygons in the scene
 		for (int i = 0; i < S.polygons.size(); ++i) {
-
 			if (S.polygons[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
 
+				// The distance between the intersection point and the starting oint of the ray
 				double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
 
+				// Check if the intersected surface is closer than any other intersected surface
 				if (newDist < smallestDist) {
-					hitFace = S.polygons[i];
+					hitSurface = S.polygons[i];
 					smallestDist = newDist;
-					best_intersectionPoint = intersectionPoint;
-					currentNormal = hitFace->getNormal();
+					closest_intersectionPoint = intersectionPoint;
+					currentNormal = hitSurface->getNormal();
 				}
 			}
 		}
 	}
 
 	
-	// Should never happen, but it does :))))))))))
-	if (hitFace == nullptr) {
+	// If the ray did not intersect with any surface (Which shouldn't happen) set the returning color to a bright green-ish color
+	if (hitSurface == nullptr) {
 		ray.setRayColor(S.custom);
 		return ray.getColor();
 	}
 
-	ray.setEndPoint(best_intersectionPoint);
-	type = hitFace->getMaterial().getType();
-	surfaceColor = hitFace->getMaterial().getColor();
-	BRDF = hitFace->getMaterial().getBRDF();
+	// Set the end point of the ray as well as the type, surfaceColor, and BRDF of the intersected surface
+	ray.setEndPoint(closest_intersectionPoint);
+	type = hitSurface->getMaterial().getType();
+	surfaceColor = hitSurface->getMaterial().getColor();
+	BRDF = hitSurface->getMaterial().getBRDF();
 	
+
+	// Decide what should happen when the ray intersects with different types of materials.
+
 	if (type == "Lamp") {
 
+		// If the ray intersects with a lamp, return {1.0, 1.0, 1.0} (white, which is defined in Scene.h)
 		ray.setRayColor(S.white);
 
 	} else if (type == "Mirror")  {
 
-		if (rayDepth > 10) {
+		// To make sure that rays doesn't bounce endlessly between two mirrors.
+		if (rayDepth > maxRayDepth) {
 			return surfaceColor;
 		}
 
+		// Increment ray depth if we decide to shot a new ray
 		++rayDepth;
 
-		Ray newRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
+		// Create a new ray with starting point at the intersection point and shoot it in the reflected direction
+		Ray newRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(ray.getDirection()), hitSurface, &ray };
 		ray.setNextRay(&newRay);
 
 		// Shoot the newly created ray into the scene
 		incomingRayColor = shootRay(newRay, S, rayDepth); 
 
+		// Set the color of the ray
 		ray.setRayColor(BRDF * surfaceColor * incomingRayColor);
 
 	} else if (type == "Glass") {
 
-		if (rayDepth > 10) {
+		/****************************************************
+		* Incomplete case, might implement later			*
+		****************************************************/
+
+		// To make sure that rays doesn't bounce endlessly between two surfaces.
+		if (rayDepth > maxRayDepth) {
 			return surfaceColor;
 		}
 
+		// Increment ray depth if we decide to shot a new ray
 		++rayDepth;
+
 
 		double n1;
 		double n2;
 
 		if (glm::dot(ray.getDirection(), currentNormal) > 0) {
-			n1 = hitFace->getMaterial().getRefractionIndex();
+			n1 = hitSurface->getMaterial().getRefractionIndex();
 			n2 = 1.0;
 		} else {
 			n1 = 1.0;
-			n2 = hitFace->getMaterial().getRefractionIndex();
+			n2 = hitSurface->getMaterial().getRefractionIndex();
 		}
 
 
@@ -183,8 +226,8 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 		}*/
 		
 
-		Ray reflectedRay{ best_intersectionPoint, ray.calculateNewDirection(ray.getDirection(), currentNormal), hitFace, &ray };
-		Ray refractedRay{ best_intersectionPoint, ray.calculateRefractedRay(ray.getDirection(), currentNormal, (n1/n2)), hitFace, &ray };
+		Ray reflectedRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(ray.getDirection()), hitSurface, &ray };
+		Ray refractedRay{ closest_intersectionPoint, hitSurface->calculateRefractedRayDirection(ray.getDirection(), (n1/n2)), hitSurface, &ray };
 
 		incomingRayColor = shootRay(reflectedRay, S, rayDepth); // Shoot the newly created ray into the scene
 		incomingRefractedRayColor = shootRay(refractedRay, S, rayDepth); // Shoot the newly created ray into the scene
@@ -194,6 +237,11 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 	} else if (type == "Lambertian") {
 
+		// To make sure that rays doesn't bounce endlessly between two surfaces.
+		if (rayDepth > maxRayDepth) {
+			return surfaceColor;
+		}
+
 		// Create uniformly distributed numbers between 0 and 1
 		std::random_device rand_dev;
 		std::mt19937 generator{ rand_dev() };
@@ -202,34 +250,35 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 		// The random number
 		double y = distribution(generator);
 
-		// Inclination angle and azemut depending on the random number
+		// Calculate the inclination angle and azimuth depending on the random number
 		double inclinationAngle = acos(sqrt(1.0 - y));
-		double azimut = 2.0 * M_PI * y / hitFace->getMaterial().getRho();
+		double azimuth = 2.0 * M_PI * y / hitSurface->getMaterial().getRho();
 
-		if (azimut <= 2.0 * M_PI && rayDepth < 10) {
+		if (azimuth <= 2.0 * M_PI) {
 
+			// Increment ray depth if we decide to shot a new ray
 			++rayDepth;
 
-			// Calculate where the new direction would intersect the hemisphere
-			Vertex xO = { cos(azimut) * sin(inclinationAngle), sin(azimut) * sin(inclinationAngle), cos(inclinationAngle) };
+			// Calculate where the random direction would intersect the hemisphere
+			Vertex xO = { cos(azimuth) * sin(inclinationAngle), sin(azimuth) * sin(inclinationAngle), cos(inclinationAngle) };
 
-			// Local coordinate system
+			// Create the local coordinate system
 			Direction xL = glm::normalize(-ray.getDirection() + glm::dot(currentNormal, ray.getDirection()) * currentNormal);
 			Direction zL = currentNormal;
 			Direction yL = glm::cross(zL, xL);
 
-			// Calculate the intersection point between hemisphere and the outgoing ray
+			// Calculate the intersection point between hemisphere and the outgoing ray in the world system
 			Vertex xW = {
 				xO.x * xL.x + xO.y * yL.x + xO.z * zL.x,
 				xO.x * xL.y + xO.y * yL.y + xO.z * zL.y,
 				xO.x * xL.z + xO.y * yL.z + xO.z * zL.z
 			};
 
-			// Calculate the new direction
-			Direction newDirection = glm::normalize(xW - best_intersectionPoint);
+			// Calculate the new direction (Should already be normalized)
+			Direction newDirection = glm::normalize(xW - closest_intersectionPoint);
 
-			// Creates a new ray depending on the new direction
-			Ray newRay{ best_intersectionPoint, newDirection, hitFace, &ray };
+			// Creates a new ray with the new direction
+			Ray newRay{ closest_intersectionPoint, newDirection, hitSurface, &ray };
 			ray.setNextRay(&newRay);
 
 			// Shoot a new ray into the scene
@@ -238,21 +287,24 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 			Color totalDirectLight = { 0.0, 0.0, 0.0 };
 
+			// Calculate the total direct illumination from all the light sources
 			for (int i = 0; i < S.lights.size(); ++i) {
-				totalDirectLight += shootShadowRays(S, S.lights[i], hitFace, best_intersectionPoint, currentNormal);
+				totalDirectLight += shootShadowRays(S, S.lights[i], hitSurface, closest_intersectionPoint, currentNormal);
 			}
 
 			// Set ray color depending on the incoming ray color and the direct light
-			//ray.setRayColor( hitFace->getMaterial().getBRDF() * hitFace->getMaterial().getColor() * incomingRayColor);
 			ray.setRayColor(BRDF * surfaceColor * incomingRayColor + totalDirectLight);
+
 		} else {
 
+			// If the ray is terminated, calculate the total direct light and return the color
 			Color totalDirectLight = {0.0, 0.0, 0.0};
 
 			for (int i = 0; i < S.lights.size(); ++i) {
-				totalDirectLight += shootShadowRays(S, S.lights[i], hitFace, best_intersectionPoint, currentNormal);
+				totalDirectLight += shootShadowRays(S, S.lights[i], hitSurface, closest_intersectionPoint, currentNormal);
 			}
 
+			// Set ray color depending on the direct light
 			ray.setRayColor(totalDirectLight);
 			//ray.setRayColor(hitFace->getMaterial().getColor());
 		}
@@ -262,62 +314,81 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 }
 
 
-Color Camera::shootShadowRays(const Scene& S, Surface* lamp, Surface*& hitSurface, const Vertex& hitPoint, const Direction& n_x) const {
+Color Camera::shootShadowRays(const Scene& S, Surface* lamp, Surface*& hitSurface, const Vertex& intersectionPoint, const Direction& n_x) const {
 	
+	// Create uniformly distributed numbers between 0 and 1
 	std::random_device rand_dev;
 	std::mt19937 generator{ rand_dev() };
 	std::uniform_real_distribution<double> distribution{ 0.0, 1.0 };
 
+	// Get two edges of the lamp
 	Direction e1 = lamp->getPoints()[1] - lamp->getPoints()[0];
 	Direction e2 = lamp->getPoints()[3] - lamp->getPoints()[0];
-	Vertex intersectionPoint;
+
+	// The intersection point between shadow ray and
+	Vertex objectPoint;
 	Color accLight = { 0.0, 0.0, 0.0 };
 
+	// Calculate the area of the light source
 	double lightArea = glm::length(e1) * glm::length(e2);
+
+	// If V = 0, the pixel is in shadow, otherwise it gets light from the light source
 	double V;
+
 	Vertex Le = {1.0, 1.0, 1.0};
+
+	// Unsure how to decide how strong the light sources are, so they are scaled until it looks good
 	Vertex w = lightArea * Le * 40.0;
 
+	// Counter for the while loop, could probably be done with a for-loop instead of a while-loop
 	int counter = 0;
 	
 	while (counter < numberOfShadowRays) {
+
+		// Reset V to 1 for every iteration
 		V = 1.0;
 
+		// Calculate two random numbers
 		double rand1 = distribution(generator);
 		double rand2 = distribution(generator);
 
+		// Calculate a random coordinate on the light source
 		Vertex lampCoordinate = lamp->getPoints()[0] + rand1 * e1 + rand2 * e2;
 
-		Direction distance = lampCoordinate - hitPoint;
+		// Calculate the vector going from the intersection point on the surface and a point on the light source
+		Direction shadowRay = lampCoordinate - intersectionPoint;
 
-		double distLen = glm::length(distance);
+		// Calculate the distance between the intersection point on the surface and a point on the light source
+		double distLen = glm::length(shadowRay);
 
-		if (glm::dot(n_x, distance) < 0) {
+		// If the dot product between the vector from the intersection point of the surface and the light source is negative, the point does not contribute any light (V = 0)
+		if (glm::dot(n_x, shadowRay) < 0) {
 			++counter;
 			continue;
 		}
 
+		// Check if the shadow ray intersects any object in the scene (Shadow rays does not intersect its own starting surface)
 		for (int i = 0; i < S.objects.size(); ++i) {
-			if (hitSurface != S.objects[i] && S.objects[i]->intersection(glm::normalize(distance), hitPoint, intersectionPoint)) {
+			if (hitSurface != S.objects[i] && S.objects[i]->intersection(glm::normalize(shadowRay), intersectionPoint, objectPoint)) {
 
-				double newDist = glm::length(intersectionPoint - hitPoint);
-
-				if (newDist < distLen) {
-					V = 0.0; // The pixel is in shadow
-					break;
-				}	
+				// The pixel is in shadow and we don't need to check if the shadow ray intersects any other objects
+				V = 0.0; 
+				break;
 			}
 		}
 
-		double cosy = glm::dot(-lamp->getNormal(), distance) / distLen;
-		double cosx = glm::dot(n_x, distance) / distLen;
+		// Calculate cos(y) and cos(x)
+		double cosy = glm::dot(-lamp->getNormal(), shadowRay) / distLen;
+		double cosx = glm::dot(n_x, shadowRay) / distLen;
 
-		accLight = accLight + V * (cosy * cosx) / pow(distLen, 2);
+		// Add to the accumulated light
+		accLight += V * (cosy * cosx) / pow(distLen, 2);
 		
 		++counter;
 	}
 
-	accLight = accLight * hitSurface->getMaterial().getBRDF() * hitSurface->getMaterial().getColor() * (w / (double)numberOfShadowRays);
+	// Multiply the accumulated light with everything outside of the sum
+	accLight *= hitSurface->getMaterial().getBRDF() * hitSurface->getMaterial().getColor() * (w / (double)numberOfShadowRays);
 
 	return accLight;
 }

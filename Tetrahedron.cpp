@@ -11,7 +11,6 @@ Tetrahedron::Tetrahedron(const Vertex p1, const Vertex p2, const Vertex p3, cons
 	triangles.push_back(t2);
 	triangles.push_back(t3);
 	triangles.push_back(t4);
-	
 }
 
 bool Tetrahedron::intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection) {

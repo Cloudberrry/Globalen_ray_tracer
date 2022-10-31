@@ -145,6 +145,7 @@
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Surface.cpp" />
     <ClCompile Include="Tetrahedron.cpp" />
     <ClCompile Include="Triangle.cpp" />
   </ItemGroup>

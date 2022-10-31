@@ -5,27 +5,31 @@
 
 class Surface {
 public:
+	// A virtual destructor incase some typ of surface includes pointers
 	virtual ~Surface() = default;
 
+	// Copy constructor
 	Surface(const Surface& C) = default;
 
+	// Calculates the intersection point and returns true if the function intersects with the surface 
 	virtual bool intersection(const Direction inDirection, const Vertex start, Vertex& intPoint) = 0;
 
-	std::vector<Vertex> getPoints() const { return points; }
+	// Get functions for the private variables
+	std::vector<Vertex> getPoints() const;
+	Material getMaterial() const;
+	Direction getNormal() const;
 
-	Material getMaterial() const { return material; }
+	// Calculates the direction of a reflected ray
+	Direction calculateReflectedRayDirection(Direction inDirection) const;
 
-	Direction getNormal() const { return normal; }
+	// Calculates the direction of a refracted ray
+	Direction calculateRefractedRayDirection(Direction inDirection, double R) const;
 
 protected:
 
-	Surface(const std::vector<Vertex>& P, const Material m)
-		: points{ P }, material { m }
-	{
-
-	}
+	// Constructor
+	Surface(const std::vector<Vertex>& P, const Material m);
 	
-
 	Material material;
 	Direction normal;
 	std::vector<Vertex> points;

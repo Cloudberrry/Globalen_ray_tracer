@@ -3,23 +3,27 @@
 
 int main() {
 	
-
+	// Declare and define properties for the image
 	int raysPerPixel = 5;
 	int numberOfShadowRays = 5;
+	int maximumRayDepth = 10;
 
-
-	std::cout << "Creating scene..." << std::endl;
+	// Create the scene
 	Scene myScene;
 
-	std::cout << "Scene complete! Creating camera..." << std::endl;
+	// Create the camera object
 	Camera myCamera{ 800, 800, raysPerPixel, numberOfShadowRays };
 
-	std::cout << "Camera setup complete! Calculating pixel colors..." << std::endl;
+	myCamera.setNumberOfRaysPerPixel(raysPerPixel);
+	myCamera.setNumberOfShadowRays(numberOfShadowRays);
+	myCamera.setMaximumRayDepth(maximumRayDepth);
+
+	
 	myCamera.setPixels(myScene);
 
-	std::cout << "Rendering pixels to the image..." << std::endl;
+	
 	myCamera.render();
-	std::cout << "Render complete!" << std::endl;
+	
 
 	return 0;
 }

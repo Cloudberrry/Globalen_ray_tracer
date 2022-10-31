@@ -5,38 +5,46 @@
 
 class Scene {
 public:
+	// Constructor
 	Scene() {
 
-		// Add lights
-		lights.push_back(&ceilLamp);
-		lights.push_back(&wallLamp);
+		std::cout << "Setting up the scene..." << std::endl;
+
+		// Add the lights
+		addLight(&ceilLamp);
+		addLight(&wallLamp);
 
 		// Adds the polygons for the floor
-		polygons.push_back(&floorTrig1);
-		polygons.push_back(&floorTrig2);
-		polygons.push_back(&floorRectangle);
+		addPolygon(&floorTrig1);
+		addPolygon(&floorTrig2);
+		addPolygon(&floorRectangle);
 
 		// Adds the polygons for the ceiling
-		polygons.push_back(&ceilTrig1);
-		polygons.push_back(&ceilTrig2);
-		polygons.push_back(&ceilRectangle);
+		addPolygon(&ceilTrig1);
+		addPolygon(&ceilTrig2);
+		addPolygon(&ceilRectangle);
 
 		// Adds the polygons for the walls
-		polygons.push_back(&wall1);
-		polygons.push_back(&wall2);
-		polygons.push_back(&wall3);
-		polygons.push_back(&wall4);
-		polygons.push_back(&wall5);
-		polygons.push_back(&wall6);
+		addPolygon(&wall1);
+		addPolygon(&wall2);
+		addPolygon(&wall3);
+		addPolygon(&wall4);
+		addPolygon(&wall5);
+		addPolygon(&wall6);
 
-		objects.push_back(&sphere1);
-		objects.push_back(&sphere2);
-		objects.push_back(&tetrahedron1);
+		// Adds the objects
+		addObject(&sphere1);
+		addObject(&sphere2);
+		addObject(&tetrahedron1);
 	}
 
+
+	// Functions for adding surfaces to the vectors
 	void addPolygon(Surface* P) { polygons.push_back(P); }
+	void addLight(Surface* P) { lights.push_back(P); }
+	void addObject(Surface* P) { objects.push_back(P); }
 	
-	// Some colors
+	// Definition of some colors
 	const Color red{ 0.8, 0.05, 0.05 };
 	const Color green{ 0.05, 0.8, 0.05 };
 	const Color blue{ 0.05, 0.05, 0.8 };
@@ -51,6 +59,8 @@ public:
 	const Color custom{ 0.55, 0.8, 0.4 };
 
 
+
+	// Definition of some materials
 	const Material mirror{ "Mirror", white, 1.0, 0.0 };
 	const Material lowReflectiveMirror{ "Mirror", white, 0.4, 0.0 };
 
@@ -59,6 +69,9 @@ public:
 
 	const Material lamp{ "Lamp", white, 1.0};
 
+
+
+	// Declaration of vectors for surfaces in the scene
 	std::vector<Surface*> polygons;
 	std::vector<Surface*> objects;
 	std::vector<Surface*> lights;
@@ -84,7 +97,7 @@ private:
 	Rectangle wall5{ {-3.0, 0.0, -5.0}, {0.0, 6.0, -5.0}, {0.0, 6.0, 5.0}, {-3.0, 0.0, 5.0}, {"Lambertian", magenta, 0.6} };
 	Rectangle wall6{ {0.0, -6.0, -5.0}, {-3.0, 0.0, -5.0}, {-3.0, 0.0, 5.0}, {0.0, -6.0, 5.0}, {"Lambertian", cyan, 0.4} };
 
-	// Add lamp
+	// Lights
 	Rectangle ceilLamp{ {4.0, -1.0, 5.0},  {4.0, 1.0, 5.0}, {6.0, 1.0, 5.0}, {6.0, -1.0, 5.0}, lamp };
 	Rectangle wallLamp{ {4.0, 6.0, -1.0},  {6.0, 6.0, -1.0}, {6.0, 6.0, 1.0}, {4.0, 6.0, 1.0}, lamp };
 
@@ -93,5 +106,5 @@ private:
 	Sphere sphere2{ 1.0, {6.0, -3.0, 0.0}, {"Lambertian", custom, 0.5} };
 
 	// Tetrahedrons
-	Tetrahedron tetrahedron1{ {5.0, -3.0, -4.0}, {3.0, -1.0, -4.0}, {5.0, 1.0, -4.0}, {4.0, -1.0, -2.0}, {"Lambertian", magenta, 1.0} };
+	Tetrahedron tetrahedron1{ {5.0, -3.0, -4.0}, {3.0, -1.0, -4.0}, {5.0, 1.0, -4.0}, {4.0, -1.0, -2.0}, {"Lambertian", magenta, 0.9} };
 };
