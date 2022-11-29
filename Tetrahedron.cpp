@@ -1,12 +1,13 @@
 #include "Tetrahedron.h"
 
-Tetrahedron::Tetrahedron(const Vertex p1, const Vertex p2, const Vertex p3, const Vertex p4, Material m)
-	: Surface{ std::vector<Vertex>{ p1, p2, p3, p4 }, m }
+Tetrahedron::Tetrahedron(const std::vector<Vertex> V, Material m)
+	: Surface{ V, m }
 {
-	Triangle t1{ points[0], points[1], points[2], material };
-	Triangle t2{ points[0], points[3], points[1], material };
-	Triangle t3{ points[1], points[3], points[2], material };
-	Triangle t4{ points[2], points[3], points[0], material };
+	// Create triangles from the vertecies and add to the triangles vector
+	Triangle t1{ V[0], V[1], V[2], material };
+	Triangle t2{ V[0], V[3], V[1], material };
+	Triangle t3{ V[1], V[3], V[2], material };
+	Triangle t4{ V[2], V[3], V[0], material };
 	triangles.push_back(t1);
 	triangles.push_back(t2);
 	triangles.push_back(t3);
@@ -15,6 +16,7 @@ Tetrahedron::Tetrahedron(const Vertex p1, const Vertex p2, const Vertex p3, cons
 
 bool Tetrahedron::intersection(const Direction inDirection, const Vertex start, Vertex& refIntersection) {
 
+	// Use triangle intersection algorithm for all triangles belonging to the tetrahedron
 	for (int i = 0; i < triangles.size(); ++i) {
 		if (glm::dot(triangles[i].getNormal(), inDirection) < 0 && triangles[i].intersection(inDirection, start, refIntersection)) {
 			normal = triangles[i].getNormal();

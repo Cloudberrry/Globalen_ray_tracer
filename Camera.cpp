@@ -18,24 +18,30 @@ void Camera::setPixels(const Scene& S) {
 	Vertex pixelPos;
 	Direction currentDirection;
 	int rayDepth = 0;
-	
+	std::random_device rand_dev;
+	std::mt19937 generator{ rand_dev() };
+	std::uniform_real_distribution<double> distribution{ 0.0, pixelWidth };
 
 	for (int i = 0; i < height; ++i) {
 		for (int j = 0; j < width; ++j) {
-
-			// Calculate the pixel position on the camera plane
-			pixelPos = { 0.0, j * pixelWidth - (1.0 - pixelWidth), i * pixelWidth - (1.0 - pixelWidth) };
-			currentDirection = glm::normalize(pixelPos - eyePosition);
-			Ray firstRay{ pixelPos, currentDirection };
-			
 			Color average_color = { 0.0, 0.0, 0.0 };
 			for (int a = 0; a < numberOfRays; ++a) {
+
+				// Two random numbers
+				double y = distribution(generator);
+				double z = distribution(generator);
+
+				// Calculate the pixel position on the camera plane
+				pixelPos = { 0.0, j * pixelWidth - (1.0 - pixelWidth - y), i * pixelWidth - (1.0 - pixelWidth - z) };
+				currentDirection = glm::normalize(pixelPos - eyePosition);
+				Ray firstRay{ pixelPos, currentDirection };
+
 				average_color += shootRay(firstRay, S, rayDepth);
 				rayDepth = 0;
 			}
 
 			//average_color = { average_color.x * 255.0 / numberOfRays, average_color.y * 255.0 / numberOfRays, average_color.z * 255.0 / numberOfRays };
-			average_color = { sqrt(average_color.x * 255.0 / numberOfRays), sqrt(average_color.y * 255.0 / numberOfRays), sqrt(average_color.z * 255.0 / numberOfRays) };
+			average_color = { sqrt(average_color.x / numberOfRays) * 255.0, sqrt(average_color.y / numberOfRays) * 255.0, sqrt(average_color.z / numberOfRays) * 255.0 };
 		
 			pixelImage[i][j] = average_color;
 
@@ -87,9 +93,9 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 	Vertex intersectionPoint;			// The intersection point
 	Vertex closest_intersectionPoint;	// The intersection point with the smallest distance to the starting point of the ray
+	Vertex currentStartingPoint = ray.getStartingPoint();
 	Direction currentNormal;			// The normal of the intersected surface at the intersection point
-	Color incomingRayColor;				// The indirect light coming from other surfaces
-	Color incomingRefractedRayColor;	// The indirect light coming from a refracted ray
+	Direction currentDirection = ray.getDirection();
 	Color surfaceColor;					// The color of the intersected surface
 	Surface* hitSurface = nullptr;		// A pointer to the intersected surface
 	std::string type;					// The type of the intersected surface
@@ -97,13 +103,14 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 	double BRDF;						// The value of the BRDF
 	
 
-
 	// Check if ray intersects any of the objects in the scene
 	for (int i = 0; i < S.objects.size(); ++i) {
-		if (S.objects[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
+
+		// Sphere intersects itself!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		if (S.objects[i]->intersection(currentDirection, currentStartingPoint, intersectionPoint)) {
 
 			// The distance between the intersection point and the starting oint of the ray
-			double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
+			double newDist = glm::length(intersectionPoint - currentStartingPoint);
 
 			// Check if the intersected surface is closer than any other intersected surface
 			if (newDist < smallestDist) {
@@ -120,10 +127,10 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 		// Go through all the light sources in the scene
 		for (int i = 0; i < S.lights.size(); ++i) {
-			if (S.lights[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
+			if (S.lights[i]->intersection(currentDirection, currentStartingPoint, intersectionPoint)) {
 
 				// The distance between the intersection point and the starting oint of the ray
-				double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
+				double newDist = glm::length(intersectionPoint - currentStartingPoint);
 
 				// Check if the intersected surface is closer than any other intersected surface
 				if (newDist < smallestDist) {
@@ -137,10 +144,10 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 		// Go through all polygons in the scene
 		for (int i = 0; i < S.polygons.size(); ++i) {
-			if (S.polygons[i]->intersection(ray.getDirection(), ray.getStartingPoint(), intersectionPoint)) {
+			if (S.polygons[i]->intersection(currentDirection, currentStartingPoint, intersectionPoint)) {
 
 				// The distance between the intersection point and the starting oint of the ray
-				double newDist = glm::length(intersectionPoint - ray.getStartingPoint());
+				double newDist = glm::length(intersectionPoint - currentStartingPoint);
 
 				// Check if the intersected surface is closer than any other intersected surface
 				if (newDist < smallestDist) {
@@ -148,6 +155,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 					smallestDist = newDist;
 					closest_intersectionPoint = intersectionPoint;
 					currentNormal = hitSurface->getNormal();
+					break;
 				}
 			}
 		}
@@ -156,7 +164,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 	
 	// If the ray did not intersect with any surface (Which shouldn't happen) set the returning color to a bright green-ish color
 	if (hitSurface == nullptr) {
-		ray.setRayColor(S.custom);
+		ray.setRayColor({0.0, 0.0, 0.0});
 		return ray.getColor();
 	}
 
@@ -167,88 +175,103 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 	BRDF = hitSurface->getMaterial().getBRDF();
 	
 
+	// Create uniformly distributed numbers between 0 and 1
+	std::random_device rand_dev;
+	std::mt19937 generator{ rand_dev() };
+	std::uniform_real_distribution<double> distribution{ 0.0, 1.0 };
+
+	// The random number
+	double y = distribution(generator);
+
 	// Decide what should happen when the ray intersects with different types of materials.
 
 	if (type == "Lamp") {
 
 		// If the ray intersects with a lamp, return {1.0, 1.0, 1.0} (white, which is defined in Scene.h)
 		ray.setRayColor(S.white);
-
+		
 	} else if (type == "Mirror")  {
 
-		// To make sure that rays doesn't bounce endlessly between two mirrors.
 		if (rayDepth > maxRayDepth) {
-			return surfaceColor;
+			return (BRDF * surfaceColor);
 		}
 
-		// Increment ray depth if we decide to shot a new ray
 		++rayDepth;
-
 		// Create a new ray with starting point at the intersection point and shoot it in the reflected direction
-		Ray newRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(ray.getDirection()), hitSurface, &ray };
+		Ray newRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(currentDirection, currentNormal), hitSurface, &ray };
 		ray.setNextRay(&newRay);
 
 		// Shoot the newly created ray into the scene
-		incomingRayColor = shootRay(newRay, S, rayDepth); 
+		newRay.setRayColor(shootRay(newRay, S, rayDepth));
 
 		// Set the color of the ray
-		ray.setRayColor(BRDF * surfaceColor * incomingRayColor);
+		ray.setRayColor(BRDF * surfaceColor * newRay.getColor());
 
 	} else if (type == "Glass") {
 
-		/****************************************************
-		* Incomplete case, might implement later			*
-		****************************************************/
-
-		// To make sure that rays doesn't bounce endlessly between two surfaces.
-		if (rayDepth > maxRayDepth) {
-			return surfaceColor;
-		}
-
-		// Increment ray depth if we decide to shot a new ray
-		++rayDepth;
-
-
+		// Declare variables
 		double n1;
 		double n2;
+		double omega;
 
-		if (glm::dot(ray.getDirection(), currentNormal) > 0) {
+		// Check From which direction the ray is intersecting the object
+		if (glm::dot(currentDirection, currentNormal) > 0) {
+
+			// The ray comes from within the glass object
 			n1 = hitSurface->getMaterial().getRefractionIndex();
 			n2 = 1.0;
+			omega = acos(glm::dot(currentDirection, currentNormal) / (double)(glm::length(currentDirection) * glm::length(currentNormal)));
+
 		} else {
+
+			// The ray comes from outside the glass object
 			n1 = 1.0;
 			n2 = hitSurface->getMaterial().getRefractionIndex();
+			omega = acos(glm::dot(-1.0 * currentDirection, currentNormal) / (double)(glm::length(currentDirection) * glm::length(currentNormal)));
 		}
-
-
-		/*if (n1 * sin(OMEGA / n2)) {
-
-		}*/
 		
+		// Calculate BRDF for the reflected(R) and the refracted(T) ray
+		double R0 = pow(((n1 - n2) / (n1 + n2)), 2);
+		double R = R0 + (1 - R0) * pow((1.0 - cos(omega)), 5);
+		double T = 1 - R;
+		
+		if (((n1 / n2) * sin(omega) > 1.0)) {
+	
+			// Only shoot a reflected ray
 
-		Ray reflectedRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(ray.getDirection()), hitSurface, &ray };
-		Ray refractedRay{ closest_intersectionPoint, hitSurface->calculateRefractedRayDirection(ray.getDirection(), (n1/n2)), hitSurface, &ray };
+			// Create a new ray with starting point at the intersection point and shoot it in the reflected direction
+			Ray reflectedRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(currentDirection, currentNormal), hitSurface, &ray };
+			ray.setNextRay(&reflectedRay);
 
-		incomingRayColor = shootRay(reflectedRay, S, rayDepth); // Shoot the newly created ray into the scene
-		incomingRefractedRayColor = shootRay(refractedRay, S, rayDepth); // Shoot the newly created ray into the scene
+			// Shoot the newly created ray into the scene
+			reflectedRay.setRayColor(shootRay(reflectedRay, S, rayDepth));
 
-		ray.setRayColor(BRDF * surfaceColor * incomingRayColor + BRDF * surfaceColor * incomingRefractedRayColor);
+			// Set the color of the ray
+			ray.setRayColor(R * surfaceColor * reflectedRay.getColor());
+		}
+		else {
+			// Terminate one of the rays
+			if (y < R) {
 
+				// Shoot reflected ray
+				Ray reflectedRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(currentDirection, currentNormal), hitSurface, &ray };
+				ray.setNextRay(&reflectedRay);
+
+				reflectedRay.setRayColor(shootRay(reflectedRay, S, rayDepth)); // Shoot the newly created ray into the scene
+				ray.setRayColor(R * surfaceColor * reflectedRay.getColor());
+			}
+			else {
+
+				// Shoot refracted ray
+				Ray refractedRay{ closest_intersectionPoint, hitSurface->calculateRefractedRayDirection(currentDirection, currentNormal, (n1 / n2)), hitSurface, &ray };
+				ray.setNextRay(&refractedRay);
+
+				refractedRay.setRayColor(shootRay(refractedRay, S, rayDepth)); // Shoot the newly created ray into the scene
+				ray.setRayColor(T * surfaceColor * refractedRay.getColor());
+			}
+		}
 
 	} else if (type == "Lambertian") {
-
-		// To make sure that rays doesn't bounce endlessly between two surfaces.
-		if (rayDepth > maxRayDepth) {
-			return surfaceColor;
-		}
-
-		// Create uniformly distributed numbers between 0 and 1
-		std::random_device rand_dev;
-		std::mt19937 generator{ rand_dev() };
-		std::uniform_real_distribution<double> distribution{ 0.0, 1.0 };
-		
-		// The random number
-		double y = distribution(generator);
 
 		// Calculate the inclination angle and azimuth depending on the random number
 		double inclinationAngle = acos(sqrt(1.0 - y));
@@ -256,14 +279,11 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 		if (azimuth <= 2.0 * M_PI) {
 
-			// Increment ray depth if we decide to shot a new ray
-			++rayDepth;
-
 			// Calculate where the random direction would intersect the hemisphere
 			Vertex xO = { cos(azimuth) * sin(inclinationAngle), sin(azimuth) * sin(inclinationAngle), cos(inclinationAngle) };
 
 			// Create the local coordinate system
-			Direction xL = glm::normalize(-ray.getDirection() + glm::dot(currentNormal, ray.getDirection()) * currentNormal);
+			Direction xL = glm::normalize(-1.0 * currentDirection + glm::dot(currentNormal, currentDirection) * currentNormal);
 			Direction zL = currentNormal;
 			Direction yL = glm::cross(zL, xL);
 
@@ -282,7 +302,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 			ray.setNextRay(&newRay);
 
 			// Shoot a new ray into the scene
-			incomingRayColor = shootRay(newRay, S, rayDepth);
+			newRay.setRayColor(shootRay(newRay, S, rayDepth));
 
 
 			Color totalDirectLight = { 0.0, 0.0, 0.0 };
@@ -293,7 +313,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 			}
 
 			// Set ray color depending on the incoming ray color and the direct light
-			ray.setRayColor(BRDF * surfaceColor * incomingRayColor + totalDirectLight);
+			ray.setRayColor(BRDF * surfaceColor * newRay.getColor() + totalDirectLight);
 
 		} else {
 
@@ -378,7 +398,7 @@ Color Camera::shootShadowRays(const Scene& S, Surface* lamp, Surface*& hitSurfac
 		}
 
 		// Calculate cos(y) and cos(x)
-		double cosy = glm::dot(-lamp->getNormal(), shadowRay) / distLen;
+		double cosy = glm::dot(-1.0 * lamp->getNormal(), shadowRay) / distLen;
 		double cosx = glm::dot(n_x, shadowRay) / distLen;
 
 		// Add to the accumulated light

@@ -20,10 +20,10 @@ public:
 	Direction getNormal() const;
 
 	// Calculates the direction of a reflected ray
-	Direction calculateReflectedRayDirection(Direction inDirection) const;
+	Direction calculateReflectedRayDirection(Direction inDirection, Direction norm) const;
 
 	// Calculates the direction of a refracted ray
-	Direction calculateRefractedRayDirection(Direction inDirection, double R) const;
+	Direction calculateRefractedRayDirection(Direction inDirection, Direction norm, double R) const;
 
 protected:
 

@@ -4,9 +4,9 @@
 int main() {
 	
 	// Declare and define properties for the image
-	int raysPerPixel = 5;
-	int numberOfShadowRays = 5;
-	int maximumRayDepth = 10;
+	int raysPerPixel = 2;
+	int numberOfShadowRays = 2;
+	int maximumMirrorBounces = 20;
 
 	// Create the scene
 	Scene myScene;
@@ -16,12 +16,11 @@ int main() {
 
 	myCamera.setNumberOfRaysPerPixel(raysPerPixel);
 	myCamera.setNumberOfShadowRays(numberOfShadowRays);
-	myCamera.setMaximumRayDepth(maximumRayDepth);
+	myCamera.setMaximumRayDepth(maximumMirrorBounces);
 
 	
 	myCamera.setPixels(myScene);
 
-	
 	myCamera.render();
 	
 

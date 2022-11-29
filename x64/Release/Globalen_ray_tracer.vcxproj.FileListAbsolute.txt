@@ -1,3 +1,4 @@
 \\ad.liu.se\home\dansa027\Documents\GitHub\Globalen_ray_tracer\x64\Release\Globalen_ray_tracer.exe
 X:\Documents\GitHub\Globalen_ray_tracer\x64\Release\Globalen_ray_tracer.exe
 F:\TNCG15\Globalen_ray_tracer\x64\Release\Globalen_ray_tracer.exe
+C:\Users\Dan_A\Documents\GitHub\Globalen_ray_tracer\x64\Release\Globalen_ray_tracer.exe

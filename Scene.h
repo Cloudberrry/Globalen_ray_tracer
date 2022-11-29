@@ -2,10 +2,11 @@
 #include "Tetrahedron.h"
 #include "Rectangle.h"
 #include "Sphere.h"
+#include "Cube.h"
 
 class Scene {
 public:
-	// Constructor
+	// Constructor which adds objects to the scene
 	Scene() {
 
 		std::cout << "Setting up the scene..." << std::endl;
@@ -35,7 +36,11 @@ public:
 		// Adds the objects
 		addObject(&sphere1);
 		addObject(&sphere2);
+		//addObject(&sphere3);
 		addObject(&tetrahedron1);
+		addObject(&cube1);
+
+
 	}
 
 
@@ -61,10 +66,11 @@ public:
 
 
 	// Definition of some materials
-	const Material mirror{ "Mirror", white, 1.0, 0.0 };
-	const Material lowReflectiveMirror{ "Mirror", white, 0.4, 0.0 };
+	const Material mirror{ "Mirror", white, 1.0, 1.0 };
+	const Material lowReflectiveMirror{ "Mirror", white, 0.4, 1.0 };
 
 	const Material glass{ "Glass", white, 1.0, 1.5 };
+	const Material highRefractionGlass{ "Glass", white, 1.0, 1.8 };
 	const Material lowReflectiveGlass{ "Glass", white, 0.4, 1.5 };
 
 	const Material lamp{ "Lamp", white, 1.0};
@@ -78,33 +84,66 @@ public:
 
 private:
 	
+	// Room vertecies
+	Vertex p1{ -3.0, 0.0, -5.0 };
+	Vertex p2{ 0.0, -6.0, -5.0 };
+	Vertex p3{ 10.0, -6.0, -5.0 };
+	Vertex p4{ 13.0, 0.0, -5.0 };
+	Vertex p5{ 10.0, 6.0, -5.0 };
+	Vertex p6{ 0.0, 6.0, -5.0 };
+	Vertex p7{ -3.0, 0.0, 5.0 };
+	Vertex p8{ 0.0, -6.0, 5.0 };
+	Vertex p9{ 10.0, -6.0, 5.0 };
+	Vertex p10{ 13.0, 0.0, 5.0 };
+	Vertex p11{ 10.0, 6.0, 5.0 };
+	Vertex p12{ 0.0, 6.0, 5.0 };
+
+	// Tetrahedron vertecies
+	Vertex t1{ 7.0, 0.0, -3.0 };
+	Vertex t2{ 5.0, 2.0, -3.0 };
+	Vertex t3{ 7.0, 4.0, -3.0 };
+	Vertex t4{ 6.0, 2.0, -1.0 };
+
+	// Cube vertecies
+	Vertex r1{ 5.0, -3.0, -5.0 };
+	Vertex r2{ 7.0, -1.0, -5.0 };
+	Vertex r3{ 9.0, -3.0, -5.0 };
+	Vertex r4{ 7.0, -5.0, -5.0 };
+	Vertex r5{ 5.0, -3.0, -2.5 };
+	Vertex r6{ 7.0, -1.0, -2.5 };
+	Vertex r7{ 9.0, -3.0, -2.5 };
+	Vertex r8{ 7.0, -5.0, -2.5 };
 
 	// Floor
-	Triangle floorTrig1{ {-3.0, 0.0, -5.0}, {0.0, -6.0, -5.0},  {0.0, 6.0, -5.0}, {"Lambertian", almostWhite} };
-	Triangle floorTrig2{ {10.0, 6.0, -5.0}, {10.0, -6.0, -5.0}, {13.0, 0.0, -5.0},  {"Lambertian", almostWhite} };
-	Rectangle floorRectangle{ {0.0, -6.0, -5.0}, {10.0, -6.0, -5.0}, {10.0, 6.0, -5.0}, {0.0, 6.0, -5.0}, {"Lambertian", almostWhite} };
+	Triangle floorTrig1{ p1, p2, p6, {"Lambertian", almostWhite} };
+	Triangle floorTrig2{ p3, p4, p5,  {"Lambertian", almostWhite} };
+	Rectangle floorRectangle{ p2, p3, p5, p6, {"Lambertian", almostWhite} };
 
 	// Ceiling
-	Triangle ceilTrig1{ {0.0, -6.0, 5.0}, {-3.0, 0.0, 5.0}, {0.0, 6.0, 5.0}, {"Lambertian", almostWhite} };
-	Triangle ceilTrig2{ {13.0, 0.0, 5.0}, {10.0, -6.0, 5.0}, {10, 6.0, 5.0}, {"Lambertian", almostWhite} };
-	Rectangle ceilRectangle{ {0.0, -6.0, 5.0},  {0.0, 6.0, 5.0}, {10.0, 6.0, 5.0}, {10.0, -6.0, 5.0}, {"Lambertian", almostWhite} };
+	Triangle ceilTrig1{ p7, p12, p8, {"Lambertian", almostWhite} };
+	Triangle ceilTrig2{ p10, p9, p11, {"Lambertian", almostWhite} };
+	Rectangle ceilRectangle{ p8,  p12, p11, p9, {"Lambertian", almostWhite} };
 
 	// Walls
-	Rectangle wall1{ {10.0, -6.0, -5.0}, {0.0, -6.0, -5.0}, {0.0, -6.0, 5.0}, {10.0, -6.0, 5.0}, {"Lambertian", red, 0.2} };
-	Rectangle wall2{ {13.0, 0.0, -5.0}, {10.0, -6.0, -5.0}, {10.0, -6.0, 5.0}, {13.0, 0.0, 5.0}, mirror };
-	Rectangle wall3{ {10.0, 6.0, -5.0}, {13.0, 0.0, -5.0}, {13.0, 0.0, 5.0}, {10.0, 6.0, 5.0}, {"Lambertian", blue, 0.9} };
-	Rectangle wall4{ {0.0, 6.0, -5.0}, {10.0, 6.0, -5.0}, {10.0, 6.0, 5.0}, {0.0, 6.0, 5.0}, {"Lambertian", yellow, 0.7} };
-	Rectangle wall5{ {-3.0, 0.0, -5.0}, {0.0, 6.0, -5.0}, {0.0, 6.0, 5.0}, {-3.0, 0.0, 5.0}, {"Lambertian", magenta, 0.6} };
-	Rectangle wall6{ {0.0, -6.0, -5.0}, {-3.0, 0.0, -5.0}, {-3.0, 0.0, 5.0}, {0.0, -6.0, 5.0}, {"Lambertian", cyan, 0.4} };
+	Rectangle wall1{ p2, p8, p9, p3, {"Lambertian", red, 0.5} };
+	Rectangle wall2{ p3, p9, p10, p4, {"Lambertian", blue, 0.6} };
+	Rectangle wall3{ p4, p10, p11, p5, {"Lambertian", green, 0.4} };
+	Rectangle wall4{ p5, p11, p12, p6, {"Lambertian", yellow, 0.7} };
+	Rectangle wall5{ p6, p12, p7, p1, {"Lambertian", magenta, 0.6} };
+	Rectangle wall6{ p1, p7, p8, p2, {"Lambertian", cyan, 0.4} };
 
 	// Lights
 	Rectangle ceilLamp{ {4.0, -1.0, 5.0},  {4.0, 1.0, 5.0}, {6.0, 1.0, 5.0}, {6.0, -1.0, 5.0}, lamp };
-	Rectangle wallLamp{ {4.0, 6.0, -1.0},  {6.0, 6.0, -1.0}, {6.0, 6.0, 1.0}, {4.0, 6.0, 1.0}, lamp };
+	Rectangle wallLamp{ {4.0, 6.0, 0.0},  {6.0, 6.0, 0.0}, {6.0, 6.0, 2.0}, {4.0, 6.0, 2.0}, lamp };
 
 	// Spheres
-	Sphere sphere1{ 2.0, {7.0, 2.0, -2.0}, mirror };
-	Sphere sphere2{ 1.0, {6.0, -3.0, 0.0}, {"Lambertian", custom, 0.5} };
+	Sphere sphere1{ 1.0, {7.0, -3.5, -1.5}, mirror };
+	Sphere sphere2{ 1.5, {9.0, 2.0, -2.0}, {"Lambertian", blue, 0.5} };
+	Sphere sphere3{ 1.5, {7.0, -3.0, -2.0}, {"Lambertian", red, 0.7} };
 
 	// Tetrahedrons
-	Tetrahedron tetrahedron1{ {5.0, -3.0, -4.0}, {3.0, -1.0, -4.0}, {5.0, 1.0, -4.0}, {4.0, -1.0, -2.0}, {"Lambertian", magenta, 0.9} };
+	Tetrahedron tetrahedron1{ std::vector<Vertex>{t1,t2,t3,t4}, highRefractionGlass };
+
+	// Cubes
+	Cube cube1{ std::vector<Vertex>{r1,r2,r3,r4,r5,r6,r7,r8}, highRefractionGlass };
 };

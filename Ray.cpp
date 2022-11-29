@@ -7,6 +7,7 @@ Ray::Ray(Vertex startPos, Direction dir, Surface* P, Ray* prevRay)
 }
 
 Ray::~Ray() {
+	// Check if the ray is the first ray shot from the eye
 	if (previous  != nullptr) {
 		previous->next = nullptr;
 	}
@@ -41,4 +42,8 @@ Color Ray::getColor() const {
 
 Surface* Ray::getSurface() const {
 	return surface;
+}
+
+Ray* Ray::getPrevious() const {
+	return previous;
 }
