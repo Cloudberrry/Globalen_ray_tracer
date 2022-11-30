@@ -14,8 +14,8 @@ bool Sphere::intersection(const Direction inDirection, const Vertex start, Verte
 	
 	double arg = pow(c2, 2) - 4.0 * c1 * c3;
 	double epsilon = 0.001;
-
-	if(arg > 0.0 ) {
+	
+	if(arg > 0.0) {
 		
 		double t1 = (-c2 + sqrt(arg)) / (2.0 * c1);
 		double t2 = (-c2 - sqrt(arg)) / (2.0 * c1);
@@ -23,7 +23,7 @@ bool Sphere::intersection(const Direction inDirection, const Vertex start, Verte
 		double t = glm::min(t1, t2);
 
 		// If the new intersection point is very close to the starting point of the ray, the ray does not intersect the surface
-		if (abs(t) < epsilon || t <= 0.0) {
+		if (t <= epsilon) {
 			return false;
 		}
 		

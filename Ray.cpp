@@ -3,7 +3,7 @@
 Ray::Ray(Vertex startPos, Direction dir, Surface* P, Ray* prevRay)
 	: start{ startPos }, direction{ dir }, surface{ P }, previous{ prevRay }
 {
-
+	setRayState("Outside");
 }
 
 Ray::~Ray() {
@@ -28,6 +28,10 @@ void Ray::setNextRay(Ray* R) {
 	next = R;
 }
 
+void Ray::setRayState(std::string s) {
+	state = s;
+}
+
 Vertex Ray::getStartingPoint() const {
 	return start;
 }
@@ -46,4 +50,8 @@ Surface* Ray::getSurface() const {
 
 Ray* Ray::getPrevious() const {
 	return previous;
+}
+
+std::string Ray::getRayState() const{
+	return state;
 }

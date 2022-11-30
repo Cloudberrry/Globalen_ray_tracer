@@ -22,12 +22,16 @@ public:
 	// Sets the next ray
 	void setNextRay(Ray* R);
 
+	// Sets the ray state as inside or outside the glass
+	void setRayState(std::string s);
+
 	// Get functions for some variables
 	Vertex getStartingPoint() const;
 	Direction getDirection() const;
 	Color getColor() const;
 	Surface* getSurface() const;
 	Ray* getPrevious() const;
+	std::string getRayState() const;
 
 private:
 	Vertex start;			// Starting point of the ray
@@ -37,4 +41,5 @@ private:
 	Color color;			// Color of the ray
 	Ray* next;				// Pointer to the next ray in the ray path
 	Ray* previous;			// Pointer to the previous ray in the ray path
+	std::string state;		// Ray state
 };

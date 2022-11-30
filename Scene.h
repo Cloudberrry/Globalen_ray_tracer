@@ -36,10 +36,9 @@ public:
 		// Adds the objects
 		addObject(&sphere1);
 		addObject(&sphere2);
-		//addObject(&sphere3);
+		addObject(&sphere3);
 		addObject(&tetrahedron1);
-		addObject(&cube1);
-
+		//addObject(&cube1);
 
 	}
 
@@ -50,13 +49,13 @@ public:
 	void addObject(Surface* P) { objects.push_back(P); }
 	
 	// Definition of some colors
-	const Color red{ 0.8, 0.05, 0.05 };
-	const Color green{ 0.05, 0.8, 0.05 };
-	const Color blue{ 0.05, 0.05, 0.8 };
+	const Color red{ 0.8, 0.1, 0.1 };
+	const Color green{ 0.1, 0.8, 0.1 };
+	const Color blue{ 0.1, 0.1, 0.8 };
 	const Color gray{ 0.2, 0.2, 0.2 };
-	const Color yellow{ 0.8, 0.8, 0.05 };
-	const Color magenta{ 0.8, 0.05, 0.8 };
-	const Color cyan{ 0.05, 0.8, 0.8 };
+	const Color yellow{ 0.8, 0.8, 0.1 };
+	const Color magenta{ 0.8, 0.1, 0.8 };
+	const Color cyan{ 0.1, 0.8, 0.8 };
 
 	const Color white{ 1.0, 1.0, 1.0 };
 	const Color almostWhite{ 0.9, 0.9, 0.9 };
@@ -99,10 +98,10 @@ private:
 	Vertex p12{ 0.0, 6.0, 5.0 };
 
 	// Tetrahedron vertecies
-	Vertex t1{ 7.0, 0.0, -3.0 };
-	Vertex t2{ 5.0, 2.0, -3.0 };
-	Vertex t3{ 7.0, 4.0, -3.0 };
-	Vertex t4{ 6.0, 2.0, -1.0 };
+	Vertex t1{ 7.0, -4.0, -3.5 };
+	Vertex t2{ 5.0, -2.0, -3.5 };
+	Vertex t3{ 7.0, 0.0, -3.5 };
+	Vertex t4{ 6.0, -2.0, -1.0 };
 
 	// Cube vertecies
 	Vertex r1{ 5.0, -3.0, -5.0 };
@@ -137,13 +136,13 @@ private:
 	Rectangle wallLamp{ {4.0, 6.0, 0.0},  {6.0, 6.0, 0.0}, {6.0, 6.0, 2.0}, {4.0, 6.0, 2.0}, lamp };
 
 	// Spheres
-	Sphere sphere1{ 1.0, {7.0, -3.5, -1.5}, mirror };
-	Sphere sphere2{ 1.5, {9.0, 2.0, -2.0}, {"Lambertian", blue, 0.5} };
-	Sphere sphere3{ 1.5, {7.0, -3.0, -2.0}, {"Lambertian", red, 0.7} };
+	Sphere sphere1{ 1.2, {9.0, 0.1, -0.5}, glass };
+	Sphere sphere2{ 1.1, {5.0, 2.5, -3.0}, {"Lambertian", custom * yellow, 0.7} };
+	Sphere sphere3{ 1.3, {7.0, -3.0, 1.0}, {"Lambertian", custom*yellow, 0.7} };
 
 	// Tetrahedrons
-	Tetrahedron tetrahedron1{ std::vector<Vertex>{t1,t2,t3,t4}, highRefractionGlass };
+	Tetrahedron tetrahedron1{ std::vector<Vertex>{t1,t2,t3,t4}, {"Lambertian", custom*blue, 0.6} };
 
 	// Cubes
-	Cube cube1{ std::vector<Vertex>{r1,r2,r3,r4,r5,r6,r7,r8}, highRefractionGlass };
+	Cube cube1{ std::vector<Vertex>{r1,r2,r3,r4,r5,r6,r7,r8}, {"Lambertian", custom*cyan, 0.7} };
 };

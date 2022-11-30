@@ -1,11 +1,16 @@
 #include "Camera.h"
 #include "Scene.h"
+#include <time.h>
 
 int main() {
 	
+
+	clock_t tStart = clock();
+
+	
 	// Declare and define properties for the image
-	int raysPerPixel = 2;
-	int numberOfShadowRays = 2;
+	int raysPerPixel = 5;
+	int numberOfShadowRays = 5;
 	int maximumMirrorBounces = 20;
 
 	// Create the scene
@@ -22,7 +27,8 @@ int main() {
 	myCamera.setPixels(myScene);
 
 	myCamera.render();
-	
+
+	std::cout << (double)(clock() - tStart) / CLOCKS_PER_SEC << std::endl;
 
 	return 0;
 }
