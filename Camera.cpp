@@ -162,7 +162,7 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 	}
 
 	
-	// If the ray did not intersect with any surface (Which shouldn't happen) set the returning color to a bright green-ish color
+	// If the ray did not intersect with any surface (Which shouldn't happen) set the returning color to black
 	if (hitSurface == nullptr) {
 		ray.setRayColor({0.0, 0.0, 0.0});
 		return ray.getColor();
@@ -193,10 +193,11 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 	} else if (type == "Mirror")  {
 
 		if (rayDepth > maxRayDepth) {
-			return (BRDF * surfaceColor);
+			ray.setRayColor({ 0.0, 0.0, 0.0 });
+			return ray.getColor();
 		}
-
 		++rayDepth;
+		
 		// Create a new ray with starting point at the intersection point and shoot it in the reflected direction
 		Ray newRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(currentDirection, currentNormal), hitSurface, &ray };
 		ray.setNextRay(&newRay);
@@ -209,14 +210,23 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 
 	} else if (type == "Glass") {
 
+		if (rayDepth > maxRayDepth) {
+			ray.setRayColor({ 0.0, 0.0, 0.0 });
+			return ray.getColor();
+		}
+		++rayDepth;
+
 		// Declare variables
 		double n1;
 		double n2;
 		double omega;
 
+		
 		// Check From which direction the ray is intersecting the object
 		if (ray.getRayState() == "Inside") {
-			std::cout << "inne" << std::endl;
+			
+			
+
 			currentNormal = -currentNormal;
 
 			// The ray comes from within the glass object
@@ -229,45 +239,57 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 			double R = R0 + (1.0 - R0) * pow((1.0 - cos(omega)), 5);
 			double T = 1.0 - R;
 
-			double alpha = asin(n1 / n2);
+			
+			double epsilon = 0.01;
 
-
-			if (omega > alpha || y < R) {
+			if ((n1 / n2) * sin(omega) >= (1.0 - epsilon)) {
+				R = 1.0;
 
 				// Shoot reflected ray
 				Ray reflectedRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(currentDirection, currentNormal), hitSurface, &ray };
 				ray.setNextRay(&reflectedRay);
 
 				reflectedRay.setRayColor(shootRay(reflectedRay, S, rayDepth)); // Shoot the newly created ray into the scene
-				ray.setRayColor(R * surfaceColor * reflectedRay.getColor());
+				ray.setRayColor(R* surfaceColor* reflectedRay.getColor());
+				
 			}
 			else {
+				if (y < R) {
 
-				// Shoot refracted ray
-				Ray refractedRay{ closest_intersectionPoint, hitSurface->calculateRefractedRayDirection(currentDirection, currentNormal, (n1 / n2)), hitSurface, &ray };
-				ray.setNextRay(&refractedRay);
-				refractedRay.setRayState("Outside");
+					// Shoot reflected ray
+					Ray reflectedRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(currentDirection, currentNormal), hitSurface, &ray };
+					ray.setNextRay(&reflectedRay);
+
+					reflectedRay.setRayColor(shootRay(reflectedRay, S, rayDepth)); // Shoot the newly created ray into the scene
+					ray.setRayColor(R * surfaceColor * reflectedRay.getColor());
+				}
+				else {
+
+					// Shoot refracted ray
+					Ray refractedRay{ closest_intersectionPoint, hitSurface->calculateRefractedRayDirection(currentDirection, currentNormal, (n1 / n2)), hitSurface, &ray };
+					ray.setNextRay(&refractedRay);
+					refractedRay.setRayState("Outside");
 
 
-				refractedRay.setRayColor(shootRay(refractedRay, S, rayDepth)); // Shoot the newly created ray into the scene
-				ray.setRayColor(T * surfaceColor * refractedRay.getColor());
+					refractedRay.setRayColor(shootRay(refractedRay, S, rayDepth)); // Shoot the newly created ray into the scene
+					ray.setRayColor(T * surfaceColor * refractedRay.getColor());
+				}
 			}
+			
 		} else {
 
 			// The ray comes from outside the glass object
 			n1 = 1.0;
 			n2 = hitSurface->getMaterial().getRefractionIndex();
-			omega = acos(glm::dot(-currentDirection, currentNormal) / (glm::length(-currentDirection) * glm::length(currentNormal)));
-
+			omega = acos(glm::dot(-currentDirection, currentNormal) / (glm::length(currentDirection) * glm::length(currentNormal)));
+			
 			// Calculate BRDF for the reflected(R) and the refracted(T) ray
 			double R0 = pow(((n1 - n2) / (n1 + n2)), 2);
 			double R = R0 + (1.0 - R0) * pow((1.0 - cos(omega)), 5);
 			double T = 1.0 - R;
 
-
 			if (y < R) {
-
-
+				
 				// Shoot reflected ray
 				Ray reflectedRay{ closest_intersectionPoint, hitSurface->calculateReflectedRayDirection(currentDirection, currentNormal), hitSurface, &ray };
 				ray.setNextRay(&reflectedRay);
@@ -276,12 +298,11 @@ Color Camera::shootRay(Ray& ray, const Scene& S, int& rayDepth) const {
 				ray.setRayColor(R * surfaceColor * reflectedRay.getColor());
 			}
 			else {
-
+				
 				// Shoot refracted ray
 				Ray refractedRay{ closest_intersectionPoint, hitSurface->calculateRefractedRayDirection(currentDirection, currentNormal, (n1 / n2)), hitSurface, &ray };
 				ray.setNextRay(&refractedRay);
 				refractedRay.setRayState("Inside");
-
 
 				refractedRay.setRayColor(shootRay(refractedRay, S, rayDepth)); // Shoot the newly created ray into the scene
 				ray.setRayColor(T * surfaceColor * refractedRay.getColor());

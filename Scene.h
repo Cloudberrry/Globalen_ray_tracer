@@ -13,7 +13,7 @@ public:
 
 		// Add the lights
 		addLight(&ceilLamp);
-		addLight(&wallLamp);
+		//addLight(&wallLamp);
 
 		// Adds the polygons for the floor
 		addPolygon(&floorTrig1);
@@ -136,9 +136,9 @@ private:
 	Rectangle wallLamp{ {4.0, 6.0, 0.0},  {6.0, 6.0, 0.0}, {6.0, 6.0, 2.0}, {4.0, 6.0, 2.0}, lamp };
 
 	// Spheres
-	Sphere sphere1{ 1.2, {9.0, 0.1, -0.5}, glass };
+	Sphere sphere1{ 1.2, {6.0, 1.0, 0.5}, glass };
 	Sphere sphere2{ 1.1, {5.0, 2.5, -3.0}, {"Lambertian", custom * yellow, 0.7} };
-	Sphere sphere3{ 1.3, {7.0, -3.0, 1.0}, {"Lambertian", custom*yellow, 0.7} };
+	Sphere sphere3{ 1.3, {7.0, -3.0, 1.0}, {"Lambertian", custom * yellow, 0.7} };
 
 	// Tetrahedrons
 	Tetrahedron tetrahedron1{ std::vector<Vertex>{t1,t2,t3,t4}, {"Lambertian", custom*blue, 0.6} };
