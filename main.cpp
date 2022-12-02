@@ -9,8 +9,8 @@ int main() {
 
 	
 	// Declare and define properties for the image
-	int raysPerPixel = 2;
-	int numberOfShadowRays = 2;
+	int raysPerPixel = 10;
+	int numberOfShadowRays = 10;
 	int maximumMirrorBounces = 10;
 
 	// Create the scene
